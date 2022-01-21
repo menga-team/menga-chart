@@ -5,6 +5,7 @@ import random
 
 from datetime import datetime
 import numpy as np
+import json
 
 class Subject(dict):
     def __init__(self, **kwargs):
@@ -14,11 +15,10 @@ class Subject(dict):
         self.color = (255, 0, 0)
 
         for i in kwargs.keys():
-            self[i] == kwargs[i]
-            
+            self[i] = kwargs[i]
+    
     @staticmethod
-    def getFromDaWeb(User):
-        data =  User.request_grades().json()
+    def getFromDict(data):
         grades = []
         for i in data["subjects"]:
             if len(i["grades"]) > 0:
@@ -52,6 +52,14 @@ class Subject(dict):
         
         # print(grades)
         return grades
+
+    @staticmethod
+    def getFromJson(path):
+        return Subject.getFromDict(json.load(open(".sample.json")))
+
+    @staticmethod
+    def getFromDaWeb(User):
+        return Subject.getFromDict(User.request_grades().json())
 
     def get_average(self, filtering=True):
         grades = self.get_grades(True)
