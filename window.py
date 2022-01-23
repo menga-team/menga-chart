@@ -51,9 +51,9 @@ class Window(QWidget):
         self.gradeEditorTab = gradeEditor.gradeEditor(self.grades, self.timeChartTab)
         self.CSVTab = QWidget()
         # self.tabs.resize(300,200)
-        self.tabs.addTab(self.gradeEditorTab,"Average chart")
+        self.tabs.addTab(self.gradeEditorTab,"Grade Editor")
         self.tabs.addTab(self.timeChartTab,"Time chart")
-        self.tabs.addTab(self.CSVTab,"CSV view")
+        # self.tabs.addTab(self.CSVTab,"CSV view")
         
         self.layout = QVBoxLayout()
         

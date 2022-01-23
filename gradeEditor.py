@@ -6,43 +6,86 @@ from qtwidgets import AnimatedToggle
 
 
 class VertTabButton(QPushButton):
-    def __init__(self, stack, tab_widget, grade_count, name, average):
+    def __init__(self, stack, tab_widget, buttonlayout, subj):
         super().__init__()
 
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-
-        self.name = name
-        self.average = average
-        self.grade_count = grade_count
         self.stack = stack
         self.tab_widget = tab_widget
+        self.buttonlayout = buttonlayout
+        self.subj = subj
 
-        self.layout = QGridLayout()
-        self.name_label = QLabel(f"{self.name} [{self.average}, {self.grade_count}]")
+        self.subj.execute_on_update.append(self.update_stats)
+
+        self.layout = QVBoxLayout()
+        self.button_layout = QHBoxLayout()
+        self.label_layout = QHBoxLayout()
+        self.name_label = QLabel()
         self.visibility_switch = AnimatedToggle()
         self.mode_switch = AnimatedToggle()
         self.remove_button = QToolButton()
+        self.add_grade_button = QToolButton()
 
+        self.mode_switch.setFixedWidth(70)
+        self.mode_switch.stateChanged.connect(self.toggle_mode)
+        self.mode_switch.setChecked(subj.visible)
+
+        self.visibility_switch.setMinimumWidth(70)
+        self.visibility_switch.stateChanged.connect(self.toggle_visibility)
+        self.visibility_switch.setChecked(bool(subj.mode))
+
+        self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
+        self.remove_button.clicked.connect(self.self_destruct)
+
+        self.layout.addWidget(self.name_label)
+        self.layout.addLayout(self.button_layout)
+        self.button_layout.addWidget(self.visibility_switch, alignment=Qt.AlignCenter)
+        self.button_layout.addWidget(self.mode_switch, alignment=Qt.AlignCenter)
+        self.button_layout.addWidget(self.add_grade_button, alignment=Qt.AlignCenter)
+        self.button_layout.addWidget(self.remove_button, alignment=Qt.AlignCenter)
+
+        self.setCheckable(True)
         self.clicked.connect(self.on_click)
-
-        self.layout.addWidget(self.name_label, 0, 0)
-
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        self.setMinimumHeight(90)
         self.setLayout(self.layout)
     
     def on_click(self):
+        for i in [self.buttonlayout.itemAt(i).widget() for i in range(self.buttonlayout.count())]:
+            i.setChecked(False)
+        self.setChecked(True)
         self.stack.setCurrentWidget(self.tab_widget)
 
     def toggle_visibility(self):
-        pass
+        self.subj.visible = self.visibility_switch.isChecked()
+        visible = self.subj.visible
+        for i in self.tab_widget.singleGradeEditors:
+            i.grade_spin.setEnabled(visible)
+            i.weight_spin.setEnabled(visible)
+            i.toggle.setEnabled(visible)
+            i.remove_button.setEnabled(visible)
+        self.subj.update()
 
     def toggle_mode(self):
+        self.subj.mode = 1 if self.mode_switch.isChecked() else 0
+        self.subj.update()
+
+    def add_grade(self):
         pass
-    
+
+    def self_destruct(self):
+        self.subj.self_destruct()
+        del self.subj
+        self.setParent(None)
+        self.tab_widget.setParent(None)
+
     def update_stats(self):
-        self.name_label.setText(f"{self.name} [{self.average}, {self.grade_count}]")
+        self.name_label.setText(f"{self.subj['name']} [{self.subj.get_average(True)}, {len(self.subj['grades'])}]")
     
     # def paintEvent(self, e) -> None:
-    #     pass
+    #     if self.isChecked():
+    #         painter = QPainter(self)
+    #         painter.fillRect(self.rect(), self.palette().highlight().color())
+    #     # super().paintEvent(e)
 
 class VertTabWidget(QWidget):
     def __init__(self):
@@ -53,15 +96,19 @@ class VertTabWidget(QWidget):
         self.button_layout = QVBoxLayout()
         self.scroll = QScrollArea()
 
+        self.scroll.setMinimumWidth(230)
         self.scroll.setLayout(self.button_layout)
 
-        self.layout.addWidget(self.scroll)
+        self.layout.addWidget(self.scroll, alignment=Qt.AlignLeft)
         self.layout.addLayout(self.stack)
+
+        self.button_layout.setAlignment(Qt.AlignTop)
+
         self.setLayout(self.layout)
 
-    def addTab(self, widget, grade_count, name, average):
+    def addTab(self, widget, subj):
         self.stack.addWidget(widget)
-        button = VertTabButton(self.stack, widget, grade_count, name, average)
+        button = VertTabButton(self.stack, widget, self.button_layout, subj)
         self.button_layout.addWidget(button)
 
 
@@ -81,6 +128,7 @@ class singleGradeEditor(QHBoxLayout):
 
         self.toggle.setChecked(self.grade["mask"])
         self.toggle.stateChanged.connect(self.toggle_visibilty)
+        self.toggle.setMinimumWidth(70)
 
         self.grade_spin.setSingleStep(0.5)
         self.grade_spin.setMaximum(10.25)
@@ -98,6 +146,7 @@ class singleGradeEditor(QHBoxLayout):
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.remove_button.clicked.connect(self.self_destruct)
 
+        self.setAlignment(Qt.AlignLeft)
 
         self.addWidget(self.toggle)
         self.addWidget(QLabel("Grade: "))
@@ -127,18 +176,37 @@ class gradeEditorTab(QWidget):
         
         self.chart = chart
         self.subj = subj
-        self.layout = QVBoxLayout()
-        # self.update_single_editors()
 
+        self.singleGradeEditors = []
+
+        self.name_box = QLineEdit()
+        self.layout = QVBoxLayout()
+        self.item_layout = QVBoxLayout()
+
+        self.name_box.setText(subj["name"])
+        self.name_box.setToolTip(subj["name"])
+        self.name_box.textChanged.connect(self.name_change)
+        self.name_box.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        
+        self.item_layout.setAlignment(Qt.AlignTop)
+
+        self.layout.setAlignment(Qt.AlignTop)
+
+        self.layout.addWidget(self.name_box)
+        self.layout.addWidget(QLabel("<hr></hr>"))
+        self.layout.addLayout(self.item_layout)
 
         for i in range(len(self.subj["grades"])):
             layout = singleGradeEditor(self.subj, i, self)
-            widget = QWidget()
-            widget.setLayout(layout)
-            self.layout.addWidget(widget)
+            self.singleGradeEditors.append(layout)
+            self.item_layout.addLayout(layout)
 
         self.setLayout(self.layout)
     
+    def name_change(self):
+        self.subj["name"] = self.name_box.toPlainText()
+        self.subj.update()
+
     # def update_single_editors(self):
     #     # self.layout = QVBoxLayout()
     #     # self.setLayout(self.layout)
@@ -165,7 +233,7 @@ class gradeEditor(QWidget):
 
         self.tabs = VertTabWidget()
         for subj in self.grades:
-            self.tabs.addTab(gradeEditorTab(subj, chart), len(subj["grades"]), subj["name"], subj.get_average(True))
+            self.tabs.addTab(gradeEditorTab(subj, chart), subj)
 
 
         self.layout = QHBoxLayout()

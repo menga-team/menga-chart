@@ -13,6 +13,10 @@ class Subject(dict):
         self.chart = None
         self["name"] = ""
         self.color = (255, 0, 0)
+        self.visible = True
+        self.view_mode = 1
+        self.mode = 1
+        self.execute_on_update = []
 
         for i in kwargs.keys():
             self[i] = kwargs[i]
@@ -77,7 +81,6 @@ class Subject(dict):
             wsum = sum(weights[:x])
             avrg.append((psum / wsum) if wsum != 0 else 0)
         return avrg
-    
 
     def set_grade_value(self, i, value):
         # print(scope, index, spinbox.value())
@@ -91,16 +94,33 @@ class Subject(dict):
         # print(self["weights"], value, i)
         self.update()
     
-    def update(self):
+    def update(self): 
+        self.chart.update_legend()
+        for i in self.execute_on_update:
+            i()
+
         if self.chart is None:
             raise Exception("chart attribute is not set")
             return
-
+        
+        if not self.visible:
+            self.chart.plotItems1[self["name"]].setData((), ())
+            self.chart.plotItems2[self["name"]].setData((), ())
+            return
         timestamps = self.get_dates(True)
         unixTimestamps = [time.mktime(datetime.strptime(x, r"%Y-%m-%d").timetuple()) for x in timestamps]
-    
-        self.chart.plotItems1[self["name"]].setData(unixTimestamps, self.get_grades(True))
-        self.chart.plotItems2[self["name"]].setData(unixTimestamps, self.get_averages())
+
+        if self.mode == 0:
+            self.chart.plotItems1[self["name"]].setData(unixTimestamps, self.get_grades(True))
+            self.chart.plotItems2[self["name"]].setData((), ())
+        elif self.mode == 1:
+            self.chart.plotItems1[self["name"]].setData((), ())
+            self.chart.plotItems2[self["name"]].setData(unixTimestamps, self.get_averages())
+        elif self.mode == 2:
+            self.chart.plotItems1[self["name"]].setData(unixTimestamps, self.get_grades(True))
+            self.chart.plotItems2[self["name"]].setData(unixTimestamps, self.get_averages())
+        else:
+            raise Exception("invalid grade viewmode in chart. eihter 0, 1 or 2")
     
     def generate_color(self):
         if self["name"] != "":
@@ -119,3 +139,8 @@ class Subject(dict):
 
     def get_masks(self, ):
         return [i["mask"] for i in self["grades"] if i["mask"]]
+    
+    def self_destruct(self):
+        self.visible = False
+        self.update()
+    

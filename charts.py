@@ -38,12 +38,16 @@ class TimeChart(pg.PlotWidget):
             timestamps = subj.get_dates(True)
             unixTimestamps = [time.mktime(datetime.strptime(x, r"%Y-%m-%d").timetuple()) for x in timestamps]
 
-            print(subj.get_grades(True))
-            print(subj.get_dates(True))
             self.plotItems1[subj["name"]] = self.plot(unixTimestamps, subj.get_grades(True), pen=pen, symbol="o")
             self.plotItems2[subj["name"]] = self.plot(unixTimestamps, subj.get_averages(), pen=pen, symbol="+")
 
-            self.legend.addItem(self.plotItems1[subj["name"]], f"{subj['name']}, {subj.get_average()}")
+        self.update_legend()
+
+    def update_legend(self):
+        self.legend.clear()
+        for subj in self.grades:
+            if subj.visible:
+                self.legend.addItem(self.plotItems1[subj["name"]], f"{subj['name']} [{subj.get_average(True)}, {len(subj['grades'])}]")
         # self.update()
 
     # def update(self):
