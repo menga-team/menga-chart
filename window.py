@@ -24,6 +24,9 @@ class Window(QWidget):
 
         # self.grades = grades.Grade.getFromDaWeb(netIntegration.user(json.loads(open(".credentials.json"))))
         self.grades = grades.Subject.getFromJson(".sample.json")
+
+        for i in self.grades:
+            print(json.dumps(i, indent=2))
         
         self.menubar = QMenuBar()
         self.actionFile = self.menubar.addMenu("File")
@@ -47,6 +50,7 @@ class Window(QWidget):
         ]
         
         self.tabs = QTabWidget()
+        self.tabs.setContentsMargins(0, 0, 0, 0)
         self.timeChartTab = charts.TimeChart(self.grades)
         self.gradeEditorTab = gradeEditor.gradeEditor(self.grades, self.timeChartTab)
         self.CSVTab = QWidget()

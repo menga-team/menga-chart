@@ -45,7 +45,7 @@ class VertTabButton(QPushButton):
 
         self.setCheckable(True)
         self.clicked.connect(self.on_click)
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        # self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self.setMinimumHeight(90)
         self.setLayout(self.layout)
     
@@ -87,24 +87,29 @@ class VertTabButton(QPushButton):
     #         painter.fillRect(self.rect(), self.palette().highlight().color())
     #     # super().paintEvent(e)
 
-class VertTabWidget(QWidget):
+class VertTabLayout(QHBoxLayout):
     def __init__(self):
         super().__init__()
 
-        self.layout = QHBoxLayout()
         self.stack = QStackedLayout()
         self.button_layout = QVBoxLayout()
         self.scroll = QScrollArea()
+        self.widget = QWidget()
+
+        self.widget.setLayout(self.button_layout)
 
         self.scroll.setMinimumWidth(230)
-        self.scroll.setLayout(self.button_layout)
-
-        self.layout.addWidget(self.scroll, alignment=Qt.AlignLeft)
-        self.layout.addLayout(self.stack)
+        self.scroll.setWidget(self.widget)        
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setWidgetResizable(True)
 
         self.button_layout.setAlignment(Qt.AlignTop)
 
-        self.setLayout(self.layout)
+        self.setContentsMargins(0, 0, 0, 0)
+
+        self.addWidget(self.scroll, alignment=Qt.AlignLeft)
+        self.addLayout(self.stack)
 
     def addTab(self, widget, subj):
         self.stack.addWidget(widget)
@@ -115,6 +120,8 @@ class VertTabWidget(QWidget):
 class singleGradeEditor(QHBoxLayout):
     def __init__(self, subj, index, tab) -> None:
         super().__init__()
+        
+        d = QDateTime()
 
         self.index = index
         self.subj = subj
@@ -125,6 +132,7 @@ class singleGradeEditor(QHBoxLayout):
         self.grade_spin = QDoubleSpinBox()
         self.weight_spin = QSpinBox()
         self.remove_button = QToolButton()
+        self.date_editor = QDateEdit()
 
         self.toggle.setChecked(self.grade["mask"])
         self.toggle.stateChanged.connect(self.toggle_visibilty)
@@ -136,12 +144,16 @@ class singleGradeEditor(QHBoxLayout):
         self.grade_spin.setValue(self.grade["grade"])
         self.grade_spin.valueChanged.connect(lambda: subj.set_grade_value(self.index, self.grade_spin.value()))
 
-
         self.weight_spin.setSingleStep(5)
         self.weight_spin.setMaximum(100)
         self.weight_spin.setMinimum(-0)
         self.weight_spin.setValue(self.grade["weight"])
         self.weight_spin.valueChanged.connect(lambda: subj.set_weight_value(self.index, self.weight_spin.value()))
+
+        self.date_editor.setDisplayFormat("dd/MM/yyyy")
+        self.date_editor.setDate(QDateTime.fromTime_t(self.grade["date"]).date())
+        self.date_editor.dateChanged.connect(lambda: [d.setDate(self.date_editor.date()), subj.set_date_value(self.index, d.toSecsSinceEpoch())])
+        self.date_editor.setCalendarPopup(True)
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.remove_button.clicked.connect(self.self_destruct)
@@ -153,11 +165,14 @@ class singleGradeEditor(QHBoxLayout):
         self.addWidget(self.grade_spin)
         self.addWidget(QLabel("weight: "))
         self.addWidget(self.weight_spin)
+        self.addWidget(QLabel("date: "))
+        self.addWidget(self.date_editor)
         self.addWidget(self.remove_button)
     
     def toggle_visibilty(self):
         self.grade_spin.setEnabled(self.toggle.isChecked())
         self.weight_spin.setEnabled(self.toggle.isChecked())
+        self.date_editor.setEnabled(self.toggle.isChecked())
         self.grade["mask"] = self.toggle.isChecked()
         self.subj.update()
     
@@ -231,12 +246,10 @@ class gradeEditor(QWidget):
 
         self.grades = grades
 
-        self.tabs = VertTabWidget()
+        self.tabs = VertTabLayout()
+
         for subj in self.grades:
             self.tabs.addTab(gradeEditorTab(subj, chart), subj)
 
 
-        self.layout = QHBoxLayout()
-        self.layout.addWidget(self.tabs)
-
-        self.setLayout(self.layout)
+        self.setLayout(self.tabs)
