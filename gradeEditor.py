@@ -180,10 +180,11 @@ class singleGradeEditor(QHBoxLayout):
         self.subj.update()
     
     def self_destruct(self):
-        del self.grade
+        self.subj["grades"].remove(self.grade)
         self.subj.update()
+        for i in [self.itemAt(i).widget() for i in range(self.count())]:
+            i.setParent(None)
         self.setParent(None)
-        del self
         # self.setParent(None)
         # self.deleteLater()
         # self.tab.update_single_editors()

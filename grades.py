@@ -67,23 +67,29 @@ class Subject(dict):
         return Subject.getFromDict(User.request_grades().json())
 
     def get_average(self, filtering=True):
-        self.sort_grades()
-        grades = self.get_grades(True)
-        weights = self.get_weights(True)
-        psum = sum([(grades[z] * weights[z]) for z in range(len(grades))])
-        wsum = sum(weights)
-        return round(psum / wsum, 2)
+        try:
+            self.sort_grades()
+            grades = self.get_grades(True)
+            weights = self.get_weights(True)
+            psum = sum([(grades[z] * weights[z]) for z in range(len(grades))])
+            wsum = sum(weights)
+            return round(psum / wsum, 2)
+        except ZeroDivisionError:
+            return 0
  
     def get_averages(self, filtering=True):
-        self.sort_grades()
-        avrg = []
-        grades = self.get_grades(True)
-        weights = self.get_weights(True)
-        for x in range(1, len(grades)+1):
-            psum = sum([(grades[:x][z] * weights[:x][z]) for z in range(len(grades[:x]))])
-            wsum = sum(weights[:x])
-            avrg.append((psum / wsum) if wsum != 0 else 0)
-        return avrg
+        try:
+            self.sort_grades()
+            avrg = []
+            grades = self.get_grades(True)
+            weights = self.get_weights(True)
+            for x in range(1, len(grades)+1):
+                psum = sum([(grades[:x][z] * weights[:x][z]) for z in range(len(grades[:x]))])
+                wsum = sum(weights[:x])
+                avrg.append((psum / wsum) if wsum != 0 else 0)
+            return avrg
+        except ZeroDivisionError:
+            return []
 
     def set_grade_value(self, i, value):
         self.sort_grades()
