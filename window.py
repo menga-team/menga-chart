@@ -25,8 +25,8 @@ class Window(QWidget):
         # self.grades = grades.Grade.getFromDaWeb(netIntegration.user(json.loads(open(".credentials.json"))))
         self.grades = grades.Subject.getFromJson(".sample.json")
 
-        for i in self.grades:
-            print(json.dumps(i, indent=2))
+        # for i in self.grades:
+        #     print(json.dumps(i, indent=2))
         
         self.menubar = QMenuBar()
         self.actionFile = self.menubar.addMenu("File")

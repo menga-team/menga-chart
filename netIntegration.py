@@ -33,7 +33,7 @@ class user():
             result = request(method, self.protocol + self.domain + url, json=json, data=data, cookies=self.cookies,
                              allow_redirects=True, **kwargs)
 
-        if result.text.count('window.location = "https://rgtfo-me.digitalesregister.it/v2/login";'):
+        if result.text.count(f'window.location = "{self.domain}{self.domain}/v2/login";'):
             self.request_cookies()
             return self.reqst(url, method=method, data=data, json=json, cache=cache, get_cache=get_cache, **kwargs)
 

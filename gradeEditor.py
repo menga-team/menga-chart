@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from qtwidgets import AnimatedToggle
+from newGrade import newGradeDialog
 
 
 class VertTabButton(QPushButton):
@@ -32,6 +33,8 @@ class VertTabButton(QPushButton):
         self.visibility_switch.setMinimumWidth(70)
         self.visibility_switch.stateChanged.connect(self.toggle_visibility)
         self.visibility_switch.setChecked(bool(subj.mode))
+        
+        self.add_grade_button.clicked.connect(newGradeDialog.getGrade)
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.remove_button.clicked.connect(self.self_destruct)
@@ -70,7 +73,7 @@ class VertTabButton(QPushButton):
         self.subj.update()
 
     def add_grade(self):
-        pass
+        self.tab_widget.addGrade(self.subj)
 
     def self_destruct(self):
         self.subj.self_destruct()
@@ -114,19 +117,19 @@ class VertTabLayout(QHBoxLayout):
     def addTab(self, widget, subj):
         self.stack.addWidget(widget)
         button = VertTabButton(self.stack, widget, self.button_layout, subj)
+        widget.tab_button = button
         self.button_layout.addWidget(button)
 
 
 class singleGradeEditor(QHBoxLayout):
-    def __init__(self, subj, index, tab) -> None:
+    def __init__(self, subj, grade, tab) -> None:
         super().__init__()
         
         d = QDateTime()
 
-        self.index = index
+        self.grade = grade
         self.subj = subj
         self.tab = tab
-        self.grade = subj["grades"][self.index]
 
         self.toggle = AnimatedToggle()
         self.grade_spin = QDoubleSpinBox()
@@ -142,17 +145,17 @@ class singleGradeEditor(QHBoxLayout):
         self.grade_spin.setMaximum(10.25)
         self.grade_spin.setMinimum(-0.25)
         self.grade_spin.setValue(self.grade["grade"])
-        self.grade_spin.valueChanged.connect(lambda: subj.set_grade_value(self.index, self.grade_spin.value()))
+        self.grade_spin.valueChanged.connect(lambda: subj.set_grade_value(self.subj.index(self.grade), self.grade_spin.value()))
 
         self.weight_spin.setSingleStep(5)
         self.weight_spin.setMaximum(100)
         self.weight_spin.setMinimum(-0)
         self.weight_spin.setValue(self.grade["weight"])
-        self.weight_spin.valueChanged.connect(lambda: subj.set_weight_value(self.index, self.weight_spin.value()))
+        self.weight_spin.valueChanged.connect(lambda: subj.set_weight_value(self.subj.index(self.grade), self.weight_spin.value()))
 
         self.date_editor.setDisplayFormat("dd/MM/yyyy")
         self.date_editor.setDate(QDateTime.fromTime_t(self.grade["date"]).date())
-        self.date_editor.dateChanged.connect(lambda: [d.setDate(self.date_editor.date()), subj.set_date_value(self.index, d.toSecsSinceEpoch())])
+        self.date_editor.dateChanged.connect(lambda: [d.setDate(self.date_editor.date()), subj.set_date_value(self.subj.index(self.grade), d.toSecsSinceEpoch())])
         self.date_editor.setCalendarPopup(True)
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
@@ -179,7 +182,8 @@ class singleGradeEditor(QHBoxLayout):
     def self_destruct(self):
         del self.grade
         self.subj.update()
-        self.parent().setParent(None)
+        self.setParent(None)
+        del self
         # self.setParent(None)
         # self.deleteLater()
         # self.tab.update_single_editors()
@@ -191,12 +195,14 @@ class gradeEditorTab(QWidget):
         
         self.chart = chart
         self.subj = subj
+        self.tab_button = None
 
         self.singleGradeEditors = []
 
         self.name_box = QLineEdit()
         self.layout = QVBoxLayout()
         self.item_layout = QVBoxLayout()
+        self.addGradeButton = QToolButton()
 
         self.name_box.setText(subj["name"])
         self.name_box.setToolTip(subj["name"])
@@ -204,15 +210,18 @@ class gradeEditorTab(QWidget):
         self.name_box.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
         
         self.item_layout.setAlignment(Qt.AlignTop)
+        
+        self.addGradeButton.clicked.connect(self.addGrade)
 
         self.layout.setAlignment(Qt.AlignTop)
 
         self.layout.addWidget(self.name_box)
         self.layout.addWidget(QLabel("<hr></hr>"))
         self.layout.addLayout(self.item_layout)
+        self.layout.addWidget(self.addGradeButton)
 
         for i in range(len(self.subj["grades"])):
-            layout = singleGradeEditor(self.subj, i, self)
+            layout = singleGradeEditor(self.subj, self.subj["grades"][i], self)
             self.singleGradeEditors.append(layout)
             self.item_layout.addLayout(layout)
 
@@ -221,6 +230,19 @@ class gradeEditorTab(QWidget):
     def name_change(self):
         self.subj["name"] = self.name_box.toPlainText()
         self.subj.update()
+    
+    def addGrade(self):
+        grade = newGradeDialog.getGrade(self.subj)
+        self.subj["grades"].append(grade)
+        self.subj.sort_grades()
+        
+        layout = singleGradeEditor(self.subj, grade, self)
+        self.singleGradeEditors.append(layout)
+        self.item_layout.insertLayout(self.subj["grades"].index(grade), layout)
+        self.subj.update()
+        
+        if self.tab_button is not None:
+            self.tab_button.update_stats()
 
     # def update_single_editors(self):
     #     # self.layout = QVBoxLayout()
