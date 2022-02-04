@@ -25,35 +25,34 @@ class Subject(dict):
     def getFromDict(data):
         grades = []
         for i in data["subjects"]:
-            if len(i["grades"]) > 0:
-                grade = Subject()
-                grade["name"] = i["subject"]["name"]
-                # grade["dates"] = []
-                grade["grades"] = []
-                # grade["weights"] = []
-                # grade["averages"] = []
-                # grade["mask"] = []
-                for item in i["grades"]:
-                    grade["grades"].append({
-                        "date": int(time.mktime(datetime.strptime(item["date"], r"%Y-%m-%d").timetuple())),
-                        "grade": float(item["grade"]),
-                        "weight": int(item["weight"]),
-                        "mask": True
-                    })
+            grade = Subject()
+            grade["name"] = i["subject"]["name"]
+            # grade["dates"] = []
+            grade["grades"] = []
+            # grade["weights"] = []
+            # grade["averages"] = []
+            # grade["mask"] = []
+            for item in i["grades"]:
+                grade["grades"].append({
+                    "date": int(time.mktime(datetime.strptime(item["date"], r"%Y-%m-%d").timetuple())),
+                    "grade": float(item["grade"]),
+                    "weight": int(item["weight"]),
+                    "mask": True
+                })
 
-                    # grade["dates"].append(item["date"])
-                    # grade["grades"].append(float(item["grade"]))
-                    # grade["weights"].append(item["weight"])
-                    # grade["mask"].append(True)
-                
-                # for x in range(1, len(grade["grades"])+1):
-                #     psum = sum([(grade["grades"][:x][z] * grade["weights"][:x][z]) for z in range(len(grade["grades"][:x]))])
-                #     wsum = sum(grade["weights"][:x])
-                #     grade["averages"].append(psum / wsum)
-                # grade["average"] = round(grade["averages"][len(grade["averages"])-1], 2)
-                grade.sort_grades()
+                # grade["dates"].append(item["date"])
+                # grade["grades"].append(float(item["grade"]))
+                # grade["weights"].append(item["weight"])
+                # grade["mask"].append(True)
+            
+            # for x in range(1, len(grade["grades"])+1):
+            #     psum = sum([(grade["grades"][:x][z] * grade["weights"][:x][z]) for z in range(len(grade["grades"][:x]))])
+            #     wsum = sum(grade["weights"][:x])
+            #     grade["averages"].append(psum / wsum)
+            # grade["average"] = round(grade["averages"][len(grade["averages"])-1], 2)
+            grade.sort_grades()
 
-                grades.append(grade)
+            grades.append(grade)
         
         # print(grades)
         return grades

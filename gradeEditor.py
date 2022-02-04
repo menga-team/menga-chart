@@ -7,12 +7,13 @@ from newGrade import newGradeDialog
 
 
 class VertTabButton(QPushButton):
-    def __init__(self, stack, tab_widget, buttonlayout, subj):
+    def __init__(self, stack, tab_widget, buttonlayout, buttonGroup, subj):
         super().__init__()
 
         self.stack = stack
         self.tab_widget = tab_widget
         self.buttonlayout = buttonlayout
+        self.buttonGroup = buttonGroup
         self.subj = subj
 
         self.subj.execute_on_update.append(self.update_stats)
@@ -35,6 +36,7 @@ class VertTabButton(QPushButton):
         self.visibility_switch.setChecked(bool(subj.mode))
         
         self.add_grade_button.clicked.connect(newGradeDialog.getGrade)
+        self.add_grade_button.setIcon(self.add_grade_button.style().standardIcon(QStyle.SP_FileDialogNewFolder))
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.remove_button.clicked.connect(self.self_destruct)
@@ -46,6 +48,7 @@ class VertTabButton(QPushButton):
         self.button_layout.addWidget(self.add_grade_button, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.remove_button, alignment=Qt.AlignCenter)
 
+        self.setFlat(True)
         self.setCheckable(True)
         self.clicked.connect(self.on_click)
         # self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
@@ -53,9 +56,10 @@ class VertTabButton(QPushButton):
         self.setLayout(self.layout)
     
     def on_click(self):
-        for i in [self.buttonlayout.itemAt(i).widget() for i in range(self.buttonlayout.count())]:
-            i.setChecked(False)
-        self.setChecked(True)
+        # for i in [self.buttonlayout.itemAt(i).widget() for i in range(self.buttonlayout.count())]:
+        #     i.setChecked(False)
+        # self.setChecked(True)
+        
         self.stack.setCurrentWidget(self.tab_widget)
 
     def toggle_visibility(self):
@@ -95,6 +99,7 @@ class VertTabLayout(QHBoxLayout):
         super().__init__()
 
         self.stack = QStackedLayout()
+        self.buttonGroup = QButtonGroup()
         self.button_layout = QVBoxLayout()
         self.scroll = QScrollArea()
         self.widget = QWidget()
@@ -108,6 +113,8 @@ class VertTabLayout(QHBoxLayout):
         self.scroll.setWidgetResizable(True)
 
         self.button_layout.setAlignment(Qt.AlignTop)
+        
+        self.buttonGroup.setExclusive(True)
 
         self.setContentsMargins(0, 0, 0, 0)
 
@@ -116,9 +123,10 @@ class VertTabLayout(QHBoxLayout):
 
     def addTab(self, widget, subj):
         self.stack.addWidget(widget)
-        button = VertTabButton(self.stack, widget, self.button_layout, subj)
+        button = VertTabButton(self.stack, widget, self.button_layout, self.buttonGroup, subj)
         widget.tab_button = button
         self.button_layout.addWidget(button)
+        self.buttonGroup.addButton(button)
 
 
 class singleGradeEditor(QHBoxLayout):
@@ -200,26 +208,31 @@ class gradeEditorTab(QWidget):
 
         self.singleGradeEditors = []
 
-        self.name_box = QLineEdit()
+        self.name_label = QLineEdit()
+        self.name_box = QHBoxLayout()
         self.layout = QVBoxLayout()
         self.item_layout = QVBoxLayout()
-        self.addGradeButton = QToolButton()
+        self.addGradeButton = QPushButton()
 
-        self.name_box.setText(subj["name"])
-        self.name_box.setToolTip(subj["name"])
-        self.name_box.textChanged.connect(self.name_change)
-        self.name_box.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        self.name_label.setText(subj["name"])
+        self.name_label.setToolTip(subj["name"])
+        self.name_label.textChanged.connect(self.name_change)
+        # self.name_label.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
         
         self.item_layout.setAlignment(Qt.AlignTop)
         
         self.addGradeButton.clicked.connect(self.addGrade)
+        self.addGradeButton.setIcon(self.addGradeButton.style().standardIcon(QStyle.SP_FileDialogNewFolder))
+        self.addGradeButton.setText("New Grade")
+        
+        self.name_box.addWidget(self.name_label)
+        self.name_box.addWidget(self.addGradeButton, alignment=Qt.AlignRight)
 
         self.layout.setAlignment(Qt.AlignTop)
 
-        self.layout.addWidget(self.name_box)
+        self.layout.addLayout(self.name_box)
         self.layout.addWidget(QLabel("<hr></hr>"))
         self.layout.addLayout(self.item_layout)
-        self.layout.addWidget(self.addGradeButton)
 
         for i in range(len(self.subj["grades"])):
             layout = singleGradeEditor(self.subj, self.subj["grades"][i], self)
@@ -229,7 +242,7 @@ class gradeEditorTab(QWidget):
         self.setLayout(self.layout)
     
     def name_change(self):
-        self.subj["name"] = self.name_box.toPlainText()
+        self.subj["name"] = self.name_label.toPlainText()
         self.subj.update()
     
     def addGrade(self):

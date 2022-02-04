@@ -1,24 +1,99 @@
-from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
-import plotly.express as px
-class Widget(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.button = QtWidgets.QPushButton('Plot', self)
-        self.browser = QtWebEngineWidgets.QWebEngineView(self)
-        vlayout = QtWidgets.QVBoxLayout(self)
-        vlayout.addWidget(self.button, alignment=QtCore.Qt.AlignHCenter)
-        vlayout.addWidget(self.browser)
-        self.button.clicked.connect(self.show_graph)
-        self.resize(1000,800)
-	
-    def show_graph(self):
-        df = px.data.tips()
-        fig = px.box(df, x="day", y="total_bill", color="smoker")
-        fig.update_traces(quartilemethod="exclusive") # or "inclusive", or "linear" by default
-        self.browser.setHtml(fig.to_html(include_plotlyjs='cdn'))
+import sys
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    widget = Widget()
-    widget.show()
-    app.exec()
+from PyQt5.QtWidgets import QApplication, QGridLayout, QPushButton, QStyle, QWidget
+
+app = QApplication(sys.argv)
+
+class Window(QWidget):
+    def __init__(self):
+        super(Window, self).__init__()
+
+        icons = [
+            'SP_ArrowBack',
+            'SP_ArrowDown',
+            'SP_ArrowForward',
+            'SP_ArrowLeft',
+            'SP_ArrowRight',
+            'SP_ArrowUp',
+            'SP_BrowserReload',
+            'SP_BrowserStop',
+            'SP_CommandLink',
+            'SP_ComputerIcon',
+            'SP_CustomBase',
+            'SP_DesktopIcon',
+            'SP_DialogApplyButton',
+            'SP_DialogCancelButton',
+            'SP_DialogCloseButton',
+            'SP_DialogDiscardButton',
+            'SP_DialogHelpButton',
+            'SP_DialogNoButton',
+            'SP_DialogOkButton',
+            'SP_DialogOpenButton',
+            'SP_DialogResetButton',
+            'SP_DialogSaveButton',
+            'SP_DialogYesButton',
+            'SP_DirClosedIcon',
+            'SP_DirHomeIcon',
+            'SP_DirIcon',
+            'SP_DirLinkIcon',
+            'SP_DirOpenIcon',
+            'SP_DockWidgetCloseButton',
+            'SP_DriveCDIcon',
+            'SP_DriveDVDIcon',
+            'SP_DriveFDIcon',
+            'SP_DriveHDIcon',
+            'SP_DriveNetIcon',
+            'SP_FileDialogBack',
+            'SP_FileDialogContentsView',
+            'SP_FileDialogDetailedView',
+            'SP_FileDialogEnd',
+            'SP_FileDialogInfoView',
+            'SP_FileDialogListView',
+            'SP_FileDialogNewFolder',
+            'SP_FileDialogStart',
+            'SP_FileDialogToParent',
+            'SP_FileIcon',
+            'SP_FileLinkIcon',
+            'SP_MediaPause',
+            'SP_MediaPlay',
+            'SP_MediaSeekBackward',
+            'SP_MediaSeekForward',
+            'SP_MediaSkipBackward',
+            'SP_MediaSkipForward',
+            'SP_MediaStop',
+            'SP_MediaVolume',
+            'SP_MediaVolumeMuted',
+            'SP_MessageBoxCritical',
+            'SP_MessageBoxInformation',
+            'SP_MessageBoxQuestion',
+            'SP_MessageBoxWarning',
+            'SP_TitleBarCloseButton',
+            'SP_TitleBarContextHelpButton',
+            'SP_TitleBarMaxButton',
+            'SP_TitleBarMenuButton',
+            'SP_TitleBarMinButton',
+            'SP_TitleBarNormalButton',
+            'SP_TitleBarShadeButton',
+            'SP_TitleBarUnshadeButton',
+            'SP_ToolBarHorizontalExtensionButton',
+            'SP_ToolBarVerticalExtensionButton',
+            'SP_TrashIcon',
+            'SP_VistaShield',
+        ]
+
+        layout = QGridLayout()
+
+        for n, name in enumerate(icons):
+            btn = QPushButton(name)
+
+            pixmapi = getattr(QStyle, name)
+            icon = self.style().standardIcon(pixmapi)
+            btn.setIcon(icon)
+            layout.addWidget(btn, n // 4, n % 4)
+
+        self.setLayout(layout)
+
+w = Window()
+w.show()
+
+app.exec()
