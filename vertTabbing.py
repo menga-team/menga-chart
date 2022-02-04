@@ -38,7 +38,7 @@ class VertTabButton(QPushButton):
         self.add_grade_button.setIcon(self.add_grade_button.style().standardIcon(QStyle.SP_FileDialogNewFolder))
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
-        self.remove_button.clicked.connect(self.self_destruct)
+        self.remove_button.clicked.connect(self.tab_widget.self_destruct)
 
         self.layout.addWidget(self.name_label)
         self.layout.addLayout(self.button_layout)
@@ -77,12 +77,6 @@ class VertTabButton(QPushButton):
 
     def add_grade(self):
         self.tab_widget.addGrade(self.subj)
-
-    def self_destruct(self):
-        self.subj.self_destruct()
-        del self.subj
-        self.setParent(None)
-        self.tab_widget.setParent(None)
 
     def update_stats(self):
         self.name_label.setText(f"{self.subj['name']} [{self.subj.get_average(True)}, {len(self.subj['grades'])}]")

@@ -91,6 +91,7 @@ class gradeEditorTab(QWidget):
         self.layout = QVBoxLayout()
         self.item_layout = QVBoxLayout()
         self.addGradeButton = QPushButton()
+        self.removeSubjectButton = QPushButton()
 
         self.name_label.setText(subj["name"])
         self.name_label.setToolTip(subj["name"])
@@ -103,7 +104,12 @@ class gradeEditorTab(QWidget):
         self.addGradeButton.setIcon(self.addGradeButton.style().standardIcon(QStyle.SP_FileDialogNewFolder))
         self.addGradeButton.setText("New Grade")
         
+        self.removeSubjectButton.clicked.connect(self.self_destruct)
+        self.removeSubjectButton.setIcon(self.removeSubjectButton.style().standardIcon(QStyle.SP_DialogCloseButton))
+        self.removeSubjectButton.setText("Delete Subject")
+        
         self.name_box.addWidget(self.name_label)
+        self.name_box.addWidget(self.removeSubjectButton, alignment=Qt.AlignRight)
         self.name_box.addWidget(self.addGradeButton, alignment=Qt.AlignRight)
 
         self.layout.setAlignment(Qt.AlignTop)
@@ -122,6 +128,12 @@ class gradeEditorTab(QWidget):
     def name_change(self):
         self.subj["name"] = self.name_label.toPlainText()
         self.subj.update()
+        
+    def self_destruct(self):
+        self.subj.self_destruct()
+        del self.subj
+        self.setParent(None)
+        self.tab_button.setParent(None)
     
     def addGrade(self):
         grade = newGradeDialog.getGrade(self.subj)
