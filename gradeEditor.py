@@ -31,17 +31,17 @@ class singleGradeEditor(QHBoxLayout):
         self.grade_spin.setMaximum(10.25)
         self.grade_spin.setMinimum(-0.25)
         self.grade_spin.setValue(self.grade["grade"])
-        self.grade_spin.valueChanged.connect(lambda: subj.set_grade_value(self.subj.index(self.grade), self.grade_spin.value()))
+        self.grade_spin.valueChanged.connect(lambda: subj.set_grade_value(self.subj["grades"].index(self.grade), self.grade_spin.value()))
 
         self.weight_spin.setSingleStep(5)
         self.weight_spin.setMaximum(100)
         self.weight_spin.setMinimum(-0)
         self.weight_spin.setValue(self.grade["weight"])
-        self.weight_spin.valueChanged.connect(lambda: subj.set_weight_value(self.subj.index(self.grade), self.weight_spin.value()))
+        self.weight_spin.valueChanged.connect(lambda: subj.set_weight_value(self.subj["grades"].index(self.grade), self.weight_spin.value()))
 
         self.date_editor.setDisplayFormat("dd/MM/yyyy")
         self.date_editor.setDate(QDateTime.fromTime_t(self.grade["date"]).date())
-        self.date_editor.dateChanged.connect(lambda: [d.setDate(self.date_editor.date()), subj.set_date_value(self.subj.index(self.grade), d.toSecsSinceEpoch())])
+        self.date_editor.dateChanged.connect(lambda: [d.setDate(self.date_editor.date()), subj.set_date_value(self.subj["grades"].index(self.grade), d.toSecsSinceEpoch())])
         self.date_editor.setCalendarPopup(True)
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
@@ -77,10 +77,9 @@ class singleGradeEditor(QHBoxLayout):
 
 
 class gradeEditorTab(QWidget):
-    def __init__(self, subj, chart) -> None:
+    def __init__(self, subj) -> None:
         super().__init__()
         
-        self.chart = chart
         self.subj = subj
         self.tab_button = None
 
@@ -118,7 +117,7 @@ class gradeEditorTab(QWidget):
         self.layout.addWidget(QLabel("<hr></hr>"))
         self.layout.addLayout(self.item_layout)
 
-        for i in range(len(self.subj["grades"])):
+        for i in range(len(self.subj.setdefault("grades", []))):
             layout = singleGradeEditor(self.subj, self.subj["grades"][i], self)
             self.singleGradeEditors.append(layout)
             self.item_layout.addLayout(layout)
@@ -126,7 +125,7 @@ class gradeEditorTab(QWidget):
         self.setLayout(self.layout)
     
     def name_change(self):
-        self.subj["name"] = self.name_label.toPlainText()
+        self.subj["name"] = self.name_label.text()
         self.subj.update()
         
     def self_destruct(self):
@@ -171,11 +170,21 @@ class gradeEditor(QWidget):
         super().__init__()
 
         self.grades = grades
+        self.chart = chart
 
         self.tabs = VertTabLayout()
 
         for subj in self.grades:
-            self.tabs.addTab(gradeEditorTab(subj, chart), subj)
+            self.tabs.addTab(gradeEditorTab(subj), subj)
 
 
         self.setLayout(self.tabs)
+    
+    def addSubject(self):
+        from newSubject import newSubjectDialog
+        subj = newSubjectDialog.getSubject()
+        subj.chart = self.chart
+        self.grades.append(subj)
+        self.chart.addPlot(subj["name"])
+        self.tabs.addTab(gradeEditorTab(subj), subj)
+        

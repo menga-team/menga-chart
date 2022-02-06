@@ -1,3 +1,4 @@
+from random import randint
 import time
 from datetime import datetime, timedelta
 
@@ -41,6 +42,12 @@ class TimeChart(pg.PlotWidget):
 
         for subj in self.grades:
             subj.update()
+    
+    def addPlot(self, name):
+        # pen = (len(self.grades) - self.grades.index(subj) + 1, self.grades.index(subj) + 1)
+        pen = randint(0, 100)
+        self.plotItems1[name] = self.plot((), (), pen=pen, symbol="o")
+        self.plotItems2[name] = self.plot((), (), pen=pen, symbol="+")
 
     def update_legend(self):
         self.legend.clear()

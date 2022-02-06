@@ -106,6 +106,9 @@ class Subject(dict):
         self.update()
     
     def update(self): 
+        if self.chart is None:
+            return 
+        
         self.chart.update_legend()
         for i in self.execute_on_update:
             i()

@@ -49,6 +49,7 @@ class Window(QWidget):
             self.actionHelp.addAction("About the application"),
         ]
         
+        
         self.tabs = QTabWidget()
         self.tabs.setContentsMargins(0, 0, 0, 0)
         self.timeChartTab = charts.TimeChart(self.grades)
@@ -58,6 +59,8 @@ class Window(QWidget):
         self.tabs.addTab(self.gradeEditorTab,"Grade Editor")
         self.tabs.addTab(self.timeChartTab,"Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")
+        
+        self.fileActions[0].triggered.connect(self.gradeEditorTab.addSubject)
         
         self.layout = QVBoxLayout()
         
