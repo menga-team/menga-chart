@@ -1,4 +1,5 @@
 test.py
+.undodir/*
 
 ### VisualStudio template
 ## Ignore Visual Studio temporary files, build results, and
