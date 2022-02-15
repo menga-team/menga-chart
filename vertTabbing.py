@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from qtwidgets import AnimatedToggle
 from newGrade import newGradeDialog
+from penutils import penIcon
 
 class VertTabButton(QPushButton):
     def __init__(self, stack, tab_widget, buttonlayout, buttonGroup, subj):
@@ -21,6 +22,7 @@ class VertTabButton(QPushButton):
         self.button_layout = QHBoxLayout()
         self.label_layout = QHBoxLayout()
         self.name_label = QLabel()
+        self.penButton = penIcon(self.subj)
         self.visibility_switch = AnimatedToggle()
         self.mode_switch = AnimatedToggle()
         self.remove_button = QToolButton()
@@ -45,6 +47,7 @@ class VertTabButton(QPushButton):
         self.button_layout.addWidget(self.visibility_switch, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.mode_switch, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.add_grade_button, alignment=Qt.AlignCenter)
+        self.button_layout.addWidget(self.penButton, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.remove_button, alignment=Qt.AlignCenter)
 
         self.setFlat(True)

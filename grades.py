@@ -1,5 +1,10 @@
 from cgitb import enable
+from mimetypes import init
 from os import system
+from PyQt5 import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import time
 import random
 
@@ -12,11 +17,11 @@ class Subject(dict):
         self.enabled = True
         self.chart = None
         self["name"] = ""
-        self.color = (255, 0, 0)
         self.visible = True
         self.view_mode = 1
         self.mode = 1
         self.execute_on_update = []
+        self.execute_on_color_update = []
 
         for i in kwargs.keys():
             self[i] = kwargs[i]
@@ -44,13 +49,18 @@ class Subject(dict):
                 # grade["grades"].append(float(item["grade"]))
                 # grade["weights"].append(item["weight"])
                 # grade["mask"].append(True)
-            
+
             # for x in range(1, len(grade["grades"])+1):
             #     psum = sum([(grade["grades"][:x][z] * grade["weights"][:x][z]) for z in range(len(grade["grades"][:x]))])
             #     wsum = sum(grade["weights"][:x])
             #     grade["averages"].append(psum / wsum)
             # grade["average"] = round(grade["averages"][len(grade["averages"])-1], 2)
             grade.sort_grades()
+            grade.setdefault("pen", {
+                "color": grade.generate_color(),
+                "cosmetic": True,
+                "width": 2,
+            })
 
             grades.append(grade)
         
@@ -64,6 +74,53 @@ class Subject(dict):
     @staticmethod
     def getFromDaWeb(User):
         return Subject.getFromDict(User.request_grades().json())
+    
+    def updatePen(self):
+        self.chart.plotItems1[self["name"]].setPen(**self["pen"])
+        self.chart.plotItems1[self["name"]].setPen(**self["pen"])
+        for i in self.execute_on_color_update:
+            i()
+        self.update()
+
+    def update(self):
+        if self.chart is None:
+            return
+        
+        self.chart.update_legend()
+        for i in self.execute_on_update:
+            i()
+
+        if self.chart is None:
+            raise Exception("chart attribute is not set")
+            return
+        
+        if not self.visible:
+            self.chart.plotItems1[self["name"]].setData((), ())
+            self.chart.plotItems2[self["name"]].setData((), ())
+            return
+        timestamps = self.get_dates(True)
+        # unixTimestamps = [time.mktime(datetime.strptime(x, r"%Y-%m-%d").timetuple()) for x in timestamps]
+
+        if self.mode == 0:
+            self.chart.plotItems1[self["name"]].setData(self.get_dates(True), self.get_grades(True))
+            self.chart.plotItems2[self["name"]].setData((), ())
+        elif self.mode == 1:
+            self.chart.plotItems1[self["name"]].setData((), ())
+            self.chart.plotItems2[self["name"]].setData(self.get_dates(True), self.get_averages())
+        elif self.mode == 2:
+            self.chart.plotItems1[self["name"]].setData(self.get_dates(True), self.get_grades(True))
+            self.chart.plotItems2[self["name"]].setData(self.get_dates(True), self.get_averages())
+        else:
+            raise Exception("invalid grade viewmode in chart. eihter 0, 1 or 2")
+
+    def generate_color(self):
+        random.seed(self["name"], 2)
+        
+        colors = [ "aqua", "aquamarine", "blue", "blueviolet", "brown", "crimson", "cyan", "darkblue", "deeppink", "deepskyblue", "firebrick", "forestgreen", "fuchsia", "gold", "green", "greenyellow", "hotpink", "indigo", "khaki", "lavender", "lightblue", "lightgreen", "lightpink", "lime", "magenta", "navy", "olive", "orange", "orangered", "pink", "purple", "red", "salmon", "sandybrown", "skyblue", "steelblue", "tomato", "turquoise", "violet", "yellow", "yellowgreen"]
+        
+        color = colors[random.randint(0, len(colors) - 1)]
+        qtcolor =  QColor(color)
+        return (qtcolor.red(), qtcolor.green(), qtcolor.blue(), qtcolor.alpha())
 
     def get_average(self, filtering=True):
         try:
@@ -105,43 +162,6 @@ class Subject(dict):
         self["grades"][i]["date"] = int(value)
         self.update()
     
-    def update(self): 
-        if self.chart is None:
-            return 
-        
-        self.chart.update_legend()
-        for i in self.execute_on_update:
-            i()
-
-        if self.chart is None:
-            raise Exception("chart attribute is not set")
-            return
-        
-        if not self.visible:
-            self.chart.plotItems1[self["name"]].setData((), ())
-            self.chart.plotItems2[self["name"]].setData((), ())
-            return
-        timestamps = self.get_dates(True)
-        # unixTimestamps = [time.mktime(datetime.strptime(x, r"%Y-%m-%d").timetuple()) for x in timestamps]
-
-        if self.mode == 0:
-            self.chart.plotItems1[self["name"]].setData(self.get_dates(True), self.get_grades(True))
-            self.chart.plotItems2[self["name"]].setData((), ())
-        elif self.mode == 1:
-            self.chart.plotItems1[self["name"]].setData((), ())
-            self.chart.plotItems2[self["name"]].setData(self.get_dates(True), self.get_averages())
-        elif self.mode == 2:
-            self.chart.plotItems1[self["name"]].setData(self.get_dates(True), self.get_grades(True))
-            self.chart.plotItems2[self["name"]].setData(self.get_dates(True), self.get_averages())
-        else:
-            raise Exception("invalid grade viewmode in chart. eihter 0, 1 or 2")
-    
-    def generate_color(self):
-        if self["name"] != "":
-            random.seed(self["name"])
-            return (random.randint(0,255), random.randint(0,255), random.randint(0,255))
-        return (255, 0, 0)
-    
     def get_grades(self, filter=True):
         self.sort_grades()
         return [i["grade"] for i in self["grades"] if i["mask"] or not filter]
@@ -165,4 +185,4 @@ class Subject(dict):
     def sort_grades(self):
         self["grades"].sort(key=lambda x: x["date"])
 
-    
+

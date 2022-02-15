@@ -35,10 +35,9 @@ class TimeChart(pg.PlotWidget):
         
 
         for subj in self.grades:
-            pen = (len(self.grades) - self.grades.index(subj) + 1, self.grades.index(subj) + 1)
 
-            self.plotItems1[subj["name"]] = self.plot((), (), pen=pen, symbol="o")
-            self.plotItems2[subj["name"]] = self.plot((), (), pen=pen, symbol="+")
+            self.plotItems1[subj["name"]] = self.plot((), (), symbol="o", pen=subj["pen"])
+            self.plotItems2[subj["name"]] = self.plot((), (), symbol="+", pen=subj["pen"])
 
         for subj in self.grades:
             subj.update()
