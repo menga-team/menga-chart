@@ -6,17 +6,18 @@ from PyQt5 import *
 from qtwidgets import AnimatedToggle
 
 
-class penIcon(QPushButton):
+class penIcon(QToolButton):
 
     def __init__(self, subj) -> None:
         super().__init__()
 
         self.subj = subj
+        
 
         self.clicked.connect(self.setColor)
         self.updateCosmetic()
-        self.subj.execute_on_color_update.append(self.updateCosmetic)
-
+        self.subj.sig.colorUpdate.connect(self.updateCosmetic)
+        
     def setColor(self):
         self.subj["pen"] = penDialog.getPen(self.subj["pen"], self)
         self.subj.updatePen()
@@ -43,16 +44,20 @@ class penDialog(QDialog):
     def __init__(self, pen, icon):
         super().__init__(icon)
 
-        self.pen = pen
+        self.pen = pen.copy()
         self.icon = icon
 
         self.layout = QGridLayout()
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.spinLayout = QHBoxLayout()
         self.cosmetics_toggle = AnimatedToggle()
         self.widthSlider = QSlider(Qt.Horizontal)
         self.widthSpinBox = QSpinBox()
         self.colorButton = QToolButton()
         self.colorDialog = QColorDialog()
+        
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
 
         self.cosmetics_toggle.setMaximumWidth(70)
         self.widthSlider.setValue(self.pen["width"])
@@ -84,6 +89,7 @@ class penDialog(QDialog):
         self.layout.addLayout(self.spinLayout, 1, 1)
         self.layout.addWidget(QLabel("Color: "), 2, 0)
         self.layout.addWidget(self.colorButton, 2, 1)
+        self.layout.addWidget(self.button_box, 3, 1)
 
         self.updateCosmetic()
         self.setWindowTitle("new Pen")
@@ -108,11 +114,12 @@ class penDialog(QDialog):
         p.setColor(self.colorButton.backgroundRole(), QColor.fromRgb(*self.pen["color"]))
         self.colorButton.setPalette(p)
 
-    def reject(self) -> None:
-        return super().accept()
+    # def reject(self) -> None:
+    #     return super().accept()
 
     @staticmethod
     def getPen(pen, icon):
         d = penDialog(pen, icon)
-        d.exec()
-        return d.pen
+        if d.exec():
+            return d.pen
+        return pen

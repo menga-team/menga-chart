@@ -16,7 +16,7 @@ class VertTabButton(QPushButton):
         self.buttonGroup = buttonGroup
         self.subj = subj
 
-        self.subj.execute_on_update.append(self.update_stats)
+        self.subj.sig.chartUpdate.connect(self.update_stats)
 
         self.layout = QVBoxLayout()
         self.button_layout = QHBoxLayout()
@@ -24,17 +24,17 @@ class VertTabButton(QPushButton):
         self.name_label = QLabel()
         self.penButton = penIcon(self.subj)
         self.visibility_switch = AnimatedToggle()
-        self.mode_switch = AnimatedToggle()
+        self.mode_combobox = QComboBox()
         self.remove_button = QToolButton()
         self.add_grade_button = QToolButton()
 
-        self.mode_switch.setFixedWidth(70)
-        self.mode_switch.stateChanged.connect(self.toggle_mode)
-        self.mode_switch.setChecked(subj.visible)
+        self.mode_combobox.addItems(("precise", "average", "both"))
+        self.mode_combobox.setCurrentIndex(subj["mode"])
+        self.mode_combobox.activated.connect(lambda: self.update_mode())
 
         self.visibility_switch.setMinimumWidth(70)
         self.visibility_switch.stateChanged.connect(self.toggle_visibility)
-        self.visibility_switch.setChecked(bool(subj.mode))
+        self.visibility_switch.setChecked(bool(subj["visible"]))
         
         self.add_grade_button.clicked.connect(newGradeDialog.getGrade)
         self.add_grade_button.setIcon(self.add_grade_button.style().standardIcon(QStyle.SP_FileDialogNewFolder))
@@ -45,7 +45,7 @@ class VertTabButton(QPushButton):
         self.layout.addWidget(self.name_label)
         self.layout.addLayout(self.button_layout)
         self.button_layout.addWidget(self.visibility_switch, alignment=Qt.AlignCenter)
-        self.button_layout.addWidget(self.mode_switch, alignment=Qt.AlignCenter)
+        self.button_layout.addWidget(self.mode_combobox, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.add_grade_button, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.penButton, alignment=Qt.AlignCenter)
         self.button_layout.addWidget(self.remove_button, alignment=Qt.AlignCenter)
@@ -65,8 +65,8 @@ class VertTabButton(QPushButton):
         self.stack.setCurrentWidget(self.tab_widget)
 
     def toggle_visibility(self):
-        self.subj.visible = self.visibility_switch.isChecked()
-        visible = self.subj.visible
+        self.subj["visible"] = self.visibility_switch.isChecked()
+        visible = self.subj["visible"]
         for i in self.tab_widget.singleGradeEditors:
             i.grade_spin.setEnabled(visible)
             i.weight_spin.setEnabled(visible)
@@ -74,8 +74,8 @@ class VertTabButton(QPushButton):
             i.remove_button.setEnabled(visible)
         self.subj.update()
 
-    def toggle_mode(self):
-        self.subj.mode = 1 if self.mode_switch.isChecked() else 0
+    def update_mode(self):
+        self.subj["mode"] = self.mode_combobox.currentIndex()
         self.subj.update()
 
     def add_grade(self):
@@ -102,11 +102,14 @@ class VertTabLayout(QHBoxLayout):
 
         self.widget.setLayout(self.button_layout)
 
-        self.scroll.setMinimumWidth(230)
+        self.scroll.setMinimumWidth(300)
         self.scroll.setWidget(self.widget)        
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setWidgetResizable(True)
+        # policy = self.scroll.sizePolicy()
+        # policy.setHorizontalPolicy(QSizePolicy.Expanding)
+        # self.scroll.setSizePolicy(policy)
 
         self.button_layout.setAlignment(Qt.AlignTop)
         
@@ -121,5 +124,8 @@ class VertTabLayout(QHBoxLayout):
         self.stack.addWidget(widget)
         button = VertTabButton(self.stack, widget, self.button_layout, self.buttonGroup, subj)
         widget.tab_button = button
-        self.button_layout.addWidget(button)
+        self.button_layout.insertWidget(0, button)
         self.buttonGroup.addButton(button)
+        
+        if len(self.stack.children()) < 2:
+            button.click()

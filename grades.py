@@ -1,11 +1,11 @@
 from cgitb import enable
 from mimetypes import init
 from os import system
-from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import time
+import sys
 import random
 
 from datetime import datetime
@@ -14,18 +14,24 @@ import json
 
 class Subject(dict):
     def __init__(self, **kwargs):
-        self.enabled = True
+
+        class SubjectEvent(QObject):
+            chartUpdate = pyqtSignal()
+            colorUpdate = pyqtSignal()
+            selfDestruct = pyqtSignal()
+
         self.chart = None
+        self._id = random.randint(-sys.maxsize, sys.maxsize)
+        self.deleteLater = False
         self["name"] = ""
-        self.visible = True
-        self.view_mode = 1
-        self.mode = 1
-        self.execute_on_update = []
-        self.execute_on_color_update = []
+        self["visible"] = True
+        self["mode"] = 1
+
+        self.sig = SubjectEvent()
 
         for i in kwargs.keys():
             self[i] = kwargs[i]
-    
+
     @staticmethod
     def getFromDict(data):
         grades = []
@@ -60,10 +66,11 @@ class Subject(dict):
                 "color": grade.generate_color(),
                 "cosmetic": True,
                 "width": 2,
+                "dynamicColor": True
             })
 
             grades.append(grade)
-        
+
         # print(grades)
         return grades
 
@@ -74,52 +81,54 @@ class Subject(dict):
     @staticmethod
     def getFromDaWeb(User):
         return Subject.getFromDict(User.request_grades().json())
-    
+
     def updatePen(self):
-        self.chart.plotItems1[self["name"]].setPen(**self["pen"])
-        self.chart.plotItems1[self["name"]].setPen(**self["pen"])
-        for i in self.execute_on_color_update:
-            i()
+        self.chart.plotItems1[self._id].setPen(**self["pen"])
+        self.chart.plotItems1[self._id].setPen(**self["pen"])
+        self.sig.colorUpdate.emit()
         self.update()
 
     def update(self):
         if self.chart is None:
             return
-        
-        self.chart.update_legend()
-        for i in self.execute_on_update:
-            i()
+
+        self.sig.chartUpdate.emit()
 
         if self.chart is None:
             raise Exception("chart attribute is not set")
             return
-        
-        if not self.visible:
-            self.chart.plotItems1[self["name"]].setData((), ())
-            self.chart.plotItems2[self["name"]].setData((), ())
+
+        if not self["visible"]:
+            self.chart.plotItems1[self._id].setData((), ())
+            self.chart.plotItems2[self._id].setData((), ())
             return
-        timestamps = self.get_dates(True)
         # unixTimestamps = [time.mktime(datetime.strptime(x, r"%Y-%m-%d").timetuple()) for x in timestamps]
 
-        if self.mode == 0:
-            self.chart.plotItems1[self["name"]].setData(self.get_dates(True), self.get_grades(True))
-            self.chart.plotItems2[self["name"]].setData((), ())
-        elif self.mode == 1:
-            self.chart.plotItems1[self["name"]].setData((), ())
-            self.chart.plotItems2[self["name"]].setData(self.get_dates(True), self.get_averages())
-        elif self.mode == 2:
-            self.chart.plotItems1[self["name"]].setData(self.get_dates(True), self.get_grades(True))
-            self.chart.plotItems2[self["name"]].setData(self.get_dates(True), self.get_averages())
+        if self["mode"] == 0:
+            self.chart.plotItems1[self._id].setData(
+                self.get_dates(True), self.get_grades(True))
+            self.chart.plotItems2[self._id].setData((), ())
+        elif self["mode"] == 1:
+            self.chart.plotItems1[self._id].setData((), ())
+            self.chart.plotItems2[self._id].setData(
+                self.get_dates(True), self.get_averages())
+        elif self["mode"] == 2:
+            self.chart.plotItems1[self._id].setData(
+                self.get_dates(True), self.get_grades(True))
+            self.chart.plotItems2[self._id].setData(
+                self.get_dates(True), self.get_averages())
         else:
-            raise Exception("invalid grade viewmode in chart. eihter 0, 1 or 2")
+            raise Exception(
+                "invalid grade viewmode in chart. eihter 0, 1 or 2")
 
     def generate_color(self):
         random.seed(self["name"], 2)
-        
-        colors = [ "aqua", "aquamarine", "blue", "blueviolet", "brown", "crimson", "cyan", "darkblue", "deeppink", "deepskyblue", "firebrick", "forestgreen", "fuchsia", "gold", "green", "greenyellow", "hotpink", "indigo", "khaki", "lavender", "lightblue", "lightgreen", "lightpink", "lime", "magenta", "navy", "olive", "orange", "orangered", "pink", "purple", "red", "salmon", "sandybrown", "skyblue", "steelblue", "tomato", "turquoise", "violet", "yellow", "yellowgreen"]
-        
+
+        colors = ["aqua", "aquamarine", "blue", "blueviolet", "brown", "crimson", "cyan", "darkblue", "deeppink", "deepskyblue", "firebrick", "forestgreen", "fuchsia", "gold", "green", "greenyellow", "hotpink", "indigo", "khaki", "lavender",
+                  "lightblue", "lightgreen", "lightpink", "lime", "magenta", "navy", "olive", "orange", "orangered", "pink", "purple", "red", "salmon", "sandybrown", "skyblue", "steelblue", "tomato", "turquoise", "violet", "yellow", "yellowgreen"]
+
         color = colors[random.randint(0, len(colors) - 1)]
-        qtcolor =  QColor(color)
+        qtcolor = QColor(color)
         return (qtcolor.red(), qtcolor.green(), qtcolor.blue(), qtcolor.alpha())
 
     def get_average(self, filtering=True):
@@ -132,7 +141,7 @@ class Subject(dict):
             return round(psum / wsum, 2)
         except ZeroDivisionError:
             return 0
- 
+
     def get_averages(self, filtering=True):
         try:
             self.sort_grades()
@@ -140,7 +149,8 @@ class Subject(dict):
             grades = self.get_grades(True)
             weights = self.get_weights(True)
             for x in range(1, len(grades)+1):
-                psum = sum([(grades[:x][z] * weights[:x][z]) for z in range(len(grades[:x]))])
+                psum = sum([(grades[:x][z] * weights[:x][z])
+                           for z in range(len(grades[:x]))])
                 wsum = sum(weights[:x])
                 avrg.append((psum / wsum) if wsum != 0 else 0)
             return avrg
@@ -161,7 +171,7 @@ class Subject(dict):
         self.sort_grades()
         self["grades"][i]["date"] = int(value)
         self.update()
-    
+
     def get_grades(self, filter=True):
         self.sort_grades()
         return [i["grade"] for i in self["grades"] if i["mask"] or not filter]
@@ -179,10 +189,10 @@ class Subject(dict):
         return [i["mask"] for i in self["grades"] if i["mask"]]
     
     def self_destruct(self):
-        self.visible = False
+        self["visible"] = False
+        self.deleteLater = True
+        self.sig.selfDestruct.emit()
         self.update()
     
     def sort_grades(self):
         self["grades"].sort(key=lambda x: x["date"])
-
-

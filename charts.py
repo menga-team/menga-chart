@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import math
+import json
 import pyqtgraph as pg
 from PyQt5 import *
 from PyQt5.QtCore import *
@@ -24,6 +25,8 @@ class TimeChart(pg.PlotWidget):
         self.grades = grades
         for i in self.grades:
             i.chart = self
+            i.sig.chartUpdate.connect(self.collectGarbage)
+            i.sig.chartUpdate.connect(self.update_legend)
 
         self.plotItems1 = {}
         self.plotItems2 = {}
@@ -36,23 +39,33 @@ class TimeChart(pg.PlotWidget):
 
         for subj in self.grades:
 
-            self.plotItems1[subj["name"]] = self.plot((), (), symbol="o", pen=subj["pen"])
-            self.plotItems2[subj["name"]] = self.plot((), (), symbol="+", pen=subj["pen"])
+            self.plotItems1[subj._id] = self.plot((), (), symbol="o", pen=subj["pen"])
+            self.plotItems2[subj._id] = self.plot((), (), symbol="+", pen=subj["pen"])
 
         for subj in self.grades:
             subj.update()
     
-    def addPlot(self, name):
+    def collectGarbage(self):
+        temp = []
+        for i in self.grades:
+            if i.deleteLater:
+                temp.append(i)
+        for i in temp:
+            self.grades.remove(i)
+    
+    def addPlot(self, id):
         # pen = (len(self.grades) - self.grades.index(subj) + 1, self.grades.index(subj) + 1)
         pen = randint(0, 100)
-        self.plotItems1[name] = self.plot((), (), pen=pen, symbol="o")
-        self.plotItems2[name] = self.plot((), (), pen=pen, symbol="+")
+        self.plotItems1[id] = self.plot((), (), pen=pen, symbol="o")
+        self.plotItems2[id] = self.plot((), (), pen=pen, symbol="+")
 
     def update_legend(self):
         self.legend.clear()
+        # print(json.dumps(self.grades, indent=2))
+        # print(len(self.grades))
         for subj in self.grades:
-            if subj.visible:
-                self.legend.addItem(self.plotItems1[subj["name"]], f"{subj['name']} [{subj.get_average(True)}, {len(subj['grades'])}]")
+            if subj["visible"]:
+                self.legend.addItem(self.plotItems1[subj._id], f"{subj['name']} [{subj.get_average(True)}, {len(subj['grades'])}]")
         # self.update()
 
     # def update(self):

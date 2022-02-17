@@ -85,12 +85,18 @@ class gradeEditorTab(QWidget):
 
         self.singleGradeEditors = []
 
+        self.colorGenToggle = AnimatedToggle()
         self.name_label = QLineEdit()
         self.name_box = QHBoxLayout()
         self.layout = QVBoxLayout()
         self.item_layout = QVBoxLayout()
+        self.penIcon = penIcon(self.subj)
         self.addGradeButton = QPushButton()
         self.removeSubjectButton = QPushButton()
+        
+        self.colorGenToggle.setMinimumWidth(70)
+        self.colorGenToggle.setChecked(self.subj["pen"]["dynamicColor"])
+        self.colorGenToggle.stateChanged.connect(self.dynamic_color_generation_toggled)
 
         self.name_label.setText(subj["name"])
         self.name_label.setToolTip(subj["name"])
@@ -107,7 +113,9 @@ class gradeEditorTab(QWidget):
         self.removeSubjectButton.setIcon(self.removeSubjectButton.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.removeSubjectButton.setText("Delete Subject")
         
+        self.name_box.addWidget(self.colorGenToggle)
         self.name_box.addWidget(self.name_label)
+        self.name_box.addWidget(self.penIcon)
         self.name_box.addWidget(self.removeSubjectButton, alignment=Qt.AlignRight)
         self.name_box.addWidget(self.addGradeButton, alignment=Qt.AlignRight)
 
@@ -124,13 +132,19 @@ class gradeEditorTab(QWidget):
 
         self.setLayout(self.layout)
     
+    def dynamic_color_generation_toggled(self):
+        self.subj["pen"]["dynamicColor"] = self.colorGenToggle.isChecked()
+        self.name_label.setFocus(True)
+        
     def name_change(self):
         self.subj["name"] = self.name_label.text()
         self.subj.update()
+        if self.subj["pen"]["dynamicColor"]:
+            self.subj["pen"]["color"] = self.subj.generate_color()
+            self.subj.sig.colorUpdate.emit()
         
     def self_destruct(self):
         self.subj.self_destruct()
-        del self.subj
         self.setParent(None)
         self.tab_button.setParent(None)
     
@@ -185,6 +199,6 @@ class gradeEditor(QWidget):
         subj = newSubjectDialog.getSubject()
         subj.chart = self.chart
         self.grades.append(subj)
-        self.chart.addPlot(subj["name"])
+        self.chart.addPlot(subj._id)
         self.tabs.addTab(gradeEditorTab(subj), subj)
         
