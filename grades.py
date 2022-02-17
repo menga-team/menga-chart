@@ -13,6 +13,9 @@ import numpy as np
 import json
 
 class Subject(dict):
+    
+    settings = QSettings("menga", "grade-chart")
+    
     def __init__(self, **kwargs):
 
         class SubjectEvent(QObject):
@@ -23,9 +26,15 @@ class Subject(dict):
         self.chart = None
         self._id = random.randint(-sys.maxsize, sys.maxsize)
         self.deleteLater = False
+        self["grades"] = []
         self["name"] = ""
         self["visible"] = True
         self["mode"] = 1
+        self["pen"] = {}
+        self["pen"]["color"] = self.generate_color()
+        self["pen"]["cosmetic"] = True
+        self["pen"]["width"] = 2
+        self["pen"]["dynamicColor"] = True
 
         self.sig = SubjectEvent()
 
@@ -35,14 +44,10 @@ class Subject(dict):
     @staticmethod
     def getFromDict(data):
         grades = []
-        for i in data["subjects"]:
+        for i in data:
             grade = Subject()
             grade["name"] = i["subject"]["name"]
-            # grade["dates"] = []
             grade["grades"] = []
-            # grade["weights"] = []
-            # grade["averages"] = []
-            # grade["mask"] = []
             for item in i["grades"]:
                 grade["grades"].append({
                     "date": int(time.mktime(datetime.strptime(item["date"], r"%Y-%m-%d").timetuple())),
@@ -50,28 +55,9 @@ class Subject(dict):
                     "weight": int(item["weight"]),
                     "mask": True
                 })
-
-                # grade["dates"].append(item["date"])
-                # grade["grades"].append(float(item["grade"]))
-                # grade["weights"].append(item["weight"])
-                # grade["mask"].append(True)
-
-            # for x in range(1, len(grade["grades"])+1):
-            #     psum = sum([(grade["grades"][:x][z] * grade["weights"][:x][z]) for z in range(len(grade["grades"][:x]))])
-            #     wsum = sum(grade["weights"][:x])
-            #     grade["averages"].append(psum / wsum)
-            # grade["average"] = round(grade["averages"][len(grade["averages"])-1], 2)
             grade.sort_grades()
-            grade.setdefault("pen", {
-                "color": grade.generate_color(),
-                "cosmetic": True,
-                "width": 2,
-                "dynamicColor": True
-            })
 
             grades.append(grade)
-
-        # print(grades)
         return grades
 
     @staticmethod
@@ -81,6 +67,15 @@ class Subject(dict):
     @staticmethod
     def getFromDaWeb(User):
         return Subject.getFromDict(User.request_grades().json())
+        
+    @staticmethod
+    def readFromQ():
+        try: return [Subject(**i) for i in json.loads(Subject.settings.value("grades"))]
+        except: return []
+    
+    @staticmethod
+    def writeToQ(grades):
+        Subject.settings.setValue("grades", json.dumps(grades, indent=2))
 
     def updatePen(self):
         self.chart.plotItems1[self._id].setPen(**self["pen"])
@@ -129,7 +124,7 @@ class Subject(dict):
 
         color = colors[random.randint(0, len(colors) - 1)]
         qtcolor = QColor(color)
-        return (qtcolor.red(), qtcolor.green(), qtcolor.blue(), qtcolor.alpha())
+        return qtcolor.red(), qtcolor.green(), qtcolor.blue(), qtcolor.alpha()
 
     def get_average(self, filtering=True):
         try:

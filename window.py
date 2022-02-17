@@ -23,7 +23,7 @@ class Window(QWidget):
         self.move(qtRectangle.topLeft())
 
         # self.grades = grades.Grade.getFromDaWeb(netIntegration.user(json.loads(open(".credentials.json"))))
-        self.grades = grades.Subject.getFromJson(".sample.json")
+        self.grades = grades.Subject.readFromQ()
 
         # for i in self.grades:
         #     print(json.dumps(i, indent=2))
@@ -70,3 +70,5 @@ class Window(QWidget):
         
         # self.raise_()
         app.exec()
+        
+        grades.Subject.writeToQ(self.grades)
