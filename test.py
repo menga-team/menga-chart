@@ -1,99 +1,37 @@
+# -*- coding: utf-8 -*-
 import sys
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
-from PyQt5.QtWidgets import QApplication, QGridLayout, QPushButton, QStyle, QWidget
 
-app = QApplication(sys.argv)
-
-class Window(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
-        super(Window, self).__init__()
+        super(MainWindow, self).__init__()
+        self.resize(200, 100)
 
-        icons = [
-            'SP_ArrowBack',
-            'SP_ArrowDown',
-            'SP_ArrowForward',
-            'SP_ArrowLeft',
-            'SP_ArrowRight',
-            'SP_ArrowUp',
-            'SP_BrowserReload',
-            'SP_BrowserStop',
-            'SP_CommandLink',
-            'SP_ComputerIcon',
-            'SP_CustomBase',
-            'SP_DesktopIcon',
-            'SP_DialogApplyButton',
-            'SP_DialogCancelButton',
-            'SP_DialogCloseButton',
-            'SP_DialogDiscardButton',
-            'SP_DialogHelpButton',
-            'SP_DialogNoButton',
-            'SP_DialogOkButton',
-            'SP_DialogOpenButton',
-            'SP_DialogResetButton',
-            'SP_DialogSaveButton',
-            'SP_DialogYesButton',
-            'SP_DirClosedIcon',
-            'SP_DirHomeIcon',
-            'SP_DirIcon',
-            'SP_DirLinkIcon',
-            'SP_DirOpenIcon',
-            'SP_DockWidgetCloseButton',
-            'SP_DriveCDIcon',
-            'SP_DriveDVDIcon',
-            'SP_DriveFDIcon',
-            'SP_DriveHDIcon',
-            'SP_DriveNetIcon',
-            'SP_FileDialogBack',
-            'SP_FileDialogContentsView',
-            'SP_FileDialogDetailedView',
-            'SP_FileDialogEnd',
-            'SP_FileDialogInfoView',
-            'SP_FileDialogListView',
-            'SP_FileDialogNewFolder',
-            'SP_FileDialogStart',
-            'SP_FileDialogToParent',
-            'SP_FileIcon',
-            'SP_FileLinkIcon',
-            'SP_MediaPause',
-            'SP_MediaPlay',
-            'SP_MediaSeekBackward',
-            'SP_MediaSeekForward',
-            'SP_MediaSkipBackward',
-            'SP_MediaSkipForward',
-            'SP_MediaStop',
-            'SP_MediaVolume',
-            'SP_MediaVolumeMuted',
-            'SP_MessageBoxCritical',
-            'SP_MessageBoxInformation',
-            'SP_MessageBoxQuestion',
-            'SP_MessageBoxWarning',
-            'SP_TitleBarCloseButton',
-            'SP_TitleBarContextHelpButton',
-            'SP_TitleBarMaxButton',
-            'SP_TitleBarMenuButton',
-            'SP_TitleBarMinButton',
-            'SP_TitleBarNormalButton',
-            'SP_TitleBarShadeButton',
-            'SP_TitleBarUnshadeButton',
-            'SP_ToolBarHorizontalExtensionButton',
-            'SP_ToolBarVerticalExtensionButton',
-            'SP_TrashIcon',
-            'SP_VistaShield',
-        ]
+        self.settings = QSettings()
 
-        layout = QGridLayout()
+        self.label_display = QLabel(self)
+        self.label_display.setGeometry(0, 0, 100, 10)
 
-        for n, name in enumerate(icons):
-            btn = QPushButton(name)
+        try: self.label_display.setText(self.settings.value('context'))
+        except: self.label_display.setText('TEST')
 
-            pixmapi = getattr(QStyle, name)
-            icon = self.style().standardIcon(pixmapi)
-            btn.setIcon(icon)
-            layout.addWidget(btn, n // 4, n % 4)
+        self.editLine = QLineEdit(self)
+        self.editLine.setGeometry(0, 20, 100, 20)
 
-        self.setLayout(layout)
+        self.button = QPushButton(self)
+        self.button.clicked.connect(self.buttonEvent)
+        self.button.setGeometry(0, 40, 100, 20)
+        self.button.setText('Enter')
 
-w = Window()
-w.show()
+    def buttonEvent(self):
+        self.settings.setValue('context', self.editLine.text())
+        self.label_display.setText(self.settings.value('context'))
 
-app.exec()
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())

@@ -8,8 +8,9 @@ import grades
 import netIntegration
 import gradeEditor
 import json
+import menuBar
 
-class Window(QWidget):
+class Window(QMainWindow):
     def __init__(self, app):
         super().__init__()
         self.show()
@@ -28,26 +29,7 @@ class Window(QWidget):
         # for i in self.grades:
         #     print(json.dumps(i, indent=2))
         
-        self.menubar = QMenuBar()
-        self.actionFile = self.menubar.addMenu("File")
-        self.actionOptions = self.menubar.addMenu("Options")
-        self.actionHelp = self.menubar.addMenu("Help")
-        
-        self.fileActions = [
-            self.actionFile.addAction("New"),
-            self.actionFile.addAction("Open"),
-            self.actionFile.addAction("Save"),
-            self.actionFile.addSeparator(),
-            self.actionFile.addAction("Import"),
-            self.actionFile.addAction("Export"),
-            self.actionFile.addSeparator(),
-            self.actionFile.addAction("Quit"),
-        ]
-        self.helpActions = [
-            self.actionHelp.addAction("Help"),
-            self.actionHelp.addAction("Issues/Report a Bug"),
-            self.actionHelp.addAction("About the application"),
-        ]
+        self.menubar = menuBar.MenuBar(self)
         
         
         self.tabs = QTabWidget()
@@ -60,13 +42,10 @@ class Window(QWidget):
         self.tabs.addTab(self.timeChartTab,"Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")
         
-        self.fileActions[0].triggered.connect(self.gradeEditorTab.addSubject)
-        
         self.layout = QVBoxLayout()
         
-        self.layout.addWidget(self.menubar)
-        self.layout.addWidget(self.tabs)
-        self.setLayout(self.layout)
+        self.setCentralWidget(self.tabs)
+        self.setMenuBar(self.menubar)
         
         # self.raise_()
         app.exec()
