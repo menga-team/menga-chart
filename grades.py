@@ -1,4 +1,5 @@
 from cgitb import enable
+from email import utils
 from mimetypes import init
 from os import system
 from PyQt5.QtCore import *
@@ -7,6 +8,9 @@ from PyQt5.QtGui import *
 import time
 import sys
 import random
+import utils
+import yaml
+import configparser
 
 from datetime import datetime
 import numpy as np
@@ -42,7 +46,8 @@ class Subject(dict):
             self[i] = kwargs[i]
 
     @staticmethod
-    def getFromDict(data):
+    def scrapeFromDaWeb(User):
+        data = User.request_grades().json()
         grades = []
         for i in data:
             grade = Subject()
@@ -59,23 +64,64 @@ class Subject(dict):
 
             grades.append(grade)
         return grades
-
+    
     @staticmethod
-    def getFromJson(path):
-        return Subject.getFromDict(json.load(open(".sample.json")))
-
+    def readFromYaml(path):
+        message="There was an error reading the json file"
+        func = lambda: [Subject(**i) for i in yaml.safe_load(open(path))]
+        data = utils.Exeption_handler(func, silent=True, message=message)
+        if data[0]:
+            return data[1]
+        else: return []
+    
     @staticmethod
-    def getFromDaWeb(User):
-        return Subject.getFromDict(User.request_grades().json())
+    def readFromJson(path):
+        message="There was an error reading the json file"
+        func = lambda: [Subject(**i) for i in json.load(open(path))]
+        data = utils.Exeption_handler(func, silent=True, message=message)
+        if data[0]:
+            return data[1]
+        else: return []
         
     @staticmethod
     def readFromQ():
-        try: return [Subject(**i) for i in json.loads(Subject.settings.value("grades"))]
-        except: return []
+        message="There was an error retrieving the application settings"
+        func = lambda: [Subject(**i) for i in json.loads(Subject.settings.value("grades"))]
+        data = utils.Exeption_handler(func, silent=True, message=message)
+        if data[0]:
+            return data[1]
+        else: return []
+        
+    @staticmethod
+    def readFromQwithPath(path):
+        config = configparser.ConfigParser()
+        config.readfp(open(path))
+        
+        message="There was an error retrieving the application settings"
+        func = lambda: [Subject(**i) for i in json.loads(config.get("General", "grades", fallback="[]"))]
+        data = utils.Exeption_handler(func, silent=True, message=message)
+        if data[0]:
+            return data[1]
+        else: return []
     
     @staticmethod
+    def saveToJson(path, grades):
+        message="There was an error saving the json file"
+        func = lambda: json.dump(grades, open(path, "w"))
+        utils.Exeption_handler(func, silent=True, message=message)
+    
+    @staticmethod
+    def saveToYaml(path, grades):
+        message="There was an error saving the yaml file"
+        func = lambda: yaml.dump([dict(**i) for i in grades], open(path, "w"))
+        utils.Exeption_handler(func, silent=True, message=message)
+        
+    @staticmethod
     def writeToQ(grades):
-        Subject.settings.setValue("grades", json.dumps(grades, indent=2))
+        message="There was an error retrieving the application settings"
+        func = lambda: Subject.settings.setValue("grades", json.dumps(grades, indent=2))
+        utils.Exeption_handler(func, silent=True, message=message)
+        
 
     def updatePen(self):
         self.chart.plotItems1[self._id].setPen(**self["pen"])

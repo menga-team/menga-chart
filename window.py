@@ -42,12 +42,23 @@ class Window(QMainWindow):
         self.tabs.addTab(self.timeChartTab,"Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")
         
-        self.layout = QVBoxLayout()
-        
         self.setCentralWidget(self.tabs)
         self.setMenuBar(self.menubar)
         
         # self.raise_()
+        f = QFileDialog()
+        print(f.options())
         app.exec()
         
         grades.Subject.writeToQ(self.grades)
+        grades.Subject.settings.setValue("dialogPath", self.menubar.dir)
+        
+        
+    def refreshTabs(self):
+        self.tabs.clear()
+        self.timeChartTab = charts.TimeChart(self.grades)
+        self.gradeEditorTab = gradeEditor.gradeEditor(self.grades, self.timeChartTab)
+        # self.tabs.resize(300,200)
+        self.tabs.addTab(self.gradeEditorTab,"Grade Editor")
+        self.tabs.addTab(self.timeChartTab,"Time chart")
+        # self.tabs.addTab(self.CSVTab,"CSV view")
