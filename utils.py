@@ -51,29 +51,16 @@ from PyQt5.QtGui import *
 #         # self.TabBar.setTabButton(self.TabBar.count()-1, QTabBar.RightSide, switch)
 
 
-def Exeption_handler(e, silent=False):
-    print('an exeption has occurred', e)
-    error_dialog = QErrorMessage()
-    error_dialog.showMessage(str(e))
-    error_dialog.exec()
-    if not silent:
-        raise e
-
-if __name__ == '__main__':
-    import sys
-
-    app = QApplication(sys.argv)
-    w = VertTabWidget()
-    w.addTab(QLabel("1"))
-    w.addTab(QLabel("2"))
-    w.addTab(QLabel("3"))
-    w.addTab(QLabel("4"))
-    w.addTab(QLabel("5"))
-    w.addTab(QLabel("6"))
-    w.addTab(QLabel("7"))
-    w.addTab(QLabel("8"))
-
-    w.resize(640, 480)
-    w.show()
-
-    sys.exit(app.exec_())
+def Exeption_handler(func, *args, silent=False, message=None, **kwargs):
+    try: 
+        return True, func(*args, **kwargs)
+    except Exception as e:
+        if message is not None: message = f"{str(e)}\n\n[{message}]"
+        else: message = str(e)
+        error_dialog = QErrorMessage()
+        error_dialog.showMessage(message)
+        error_dialog.exec()
+        if not silent:
+            raise e
+        return False, message
+    

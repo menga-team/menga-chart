@@ -1,3 +1,4 @@
+from ast import ExceptHandler
 import sys
 import time
 
@@ -12,12 +13,7 @@ from window import *
 import utils
 
 def main():
-    try:
-        window = Window(app)
-        # window.setWindowIcon(QIcon(join(resources_path, 'icon.png')))
-    except Exception as e:
-        # utils.Exeption_handler(e)
-        raise e
+    utils.Exeption_handler(Window, app)
 
 
 if __name__ == "__main__":
