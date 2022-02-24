@@ -1,7 +1,4 @@
-from cgitb import enable
 from email import utils
-from mimetypes import init
-from os import system
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -13,7 +10,6 @@ import yaml
 import configparser
 
 from datetime import datetime
-import numpy as np
 import json
 
 class Subject(dict):
@@ -22,6 +18,8 @@ class Subject(dict):
     
     def __init__(self, **kwargs):
 
+        for i in kwargs.keys():
+            self[i] = kwargs[i]
         class SubjectEvent(QObject):
             chartUpdate = pyqtSignal()
             colorUpdate = pyqtSignal()
@@ -30,28 +28,23 @@ class Subject(dict):
         self.chart = None
         self._id = random.randint(-sys.maxsize, sys.maxsize)
         self.deleteLater = False
-        self["grades"] = []
-        self["name"] = ""
-        self["visible"] = True
-        self["mode"] = 1
-        self["pen"] = {}
-        self["pen"]["color"] = self.generate_color()
-        self["pen"]["cosmetic"] = True
-        self["pen"]["width"] = 2
-        self["pen"]["dynamicColor"] = True
+        self.setdefault("grades", [])
+        self.setdefault("name", "")
+        self.setdefault("visible", True)
+        self.setdefault("mode", 1)
+        self.setdefault("pen", {})
+        self["pen"].setdefault("color", self.generate_color())
+        self["pen"].setdefault("cosmetic", True)
+        self["pen"].setdefault("width", 2)
+        self["pen"].setdefault("dynamicColor", True)
 
         self.sig = SubjectEvent()
 
-        for i in kwargs.keys():
-            self[i] = kwargs[i]
-
     @staticmethod
-    def scrapeFromDaWeb(User):
-        data = User.request_grades().json()
+    def getFromRequestResponse(data):
         grades = []
-        for i in data:
-            grade = Subject()
-            grade["name"] = i["subject"]["name"]
+        for i in data["subjects"]:
+            grade = Subject(name=i["subject"]["name"])
             grade["grades"] = []
             for item in i["grades"]:
                 grade["grades"].append({
@@ -61,7 +54,6 @@ class Subject(dict):
                     "mask": True
                 })
             grade.sort_grades()
-
             grades.append(grade)
         return grades
     
@@ -89,7 +81,8 @@ class Subject(dict):
         func = lambda: [Subject(**i) for i in json.loads(Subject.settings.value("grades"))]
         data = utils.Exeption_handler(func, silent=True, message=message)
         if data[0]:
-            return data[1]
+            return []
+            # return data[1]
         else: return []
         
     @staticmethod

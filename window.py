@@ -44,10 +44,6 @@ class Window(QMainWindow):
         
         self.setCentralWidget(self.tabs)
         self.setMenuBar(self.menubar)
-        
-        # self.raise_()
-        f = QFileDialog()
-        print(f.options())
         app.exec()
         
         grades.Subject.writeToQ(self.grades)
