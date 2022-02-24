@@ -5,7 +5,6 @@ from PyQt5.QtGui import *
 
 import charts
 import grades
-import netIntegration
 import gradeEditor
 import json
 import menuBar
