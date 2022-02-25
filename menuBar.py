@@ -16,7 +16,6 @@ class MenuBar(QMenuBar):
         
         self.window = window
         self.grades = window.grades
-        self.dir = grades.Subject.settings.value("dialogPath", defaultValue=os.path.expanduser('~'))
         self.credentials = (True, {})
         
         
@@ -51,6 +50,7 @@ class MenuBar(QMenuBar):
         self.IssuesAction =  self.HelpMenu.addAction("Issues/Report a Bug")
         self.AboutAction =  self.HelpMenu.addAction("About the application")
         
+        self.NewAction.triggered.connect(self.newProject)
         self.registerImportAction.triggered.connect(self.registerImport)
         self.jsonImportAction.triggered.connect(self.jsonImport)
         self.yamlmportAction.triggered.connect(self.yamlImport)
@@ -58,7 +58,32 @@ class MenuBar(QMenuBar):
         self.jsonExportAction.triggered.connect(self.jsonExport)
         self.yamlExportAction.triggered.connect(self.yamlExport)
     
+    def confirmDiscard(self):
+        if grades.Subject.edited:
+            res =  QMessageBox.warning(self, "My Application", "There are unsaved changes.\nDo you want to save your changes?", 
+                                   QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Save)
+            if res == QMessageBox.Save:
+                self.saveProject()
+            elif res == QMessageBox.Cancel:
+                return False
+        return grades.Subject.settings.value("path", False)
+    
+    def newProject(self):
+        if self.confirmDiscard():
+            self.window.grades = []
+            self.window.refreshTabs()
+            grades.Subject.settings.setValue("path", "")
+                
+    def saveProject(self):
+        if grades.Subject.settings.value("path", "") == "":
+            path = QFileDialog.getSaveFileName(self, "Save File", grades.Subject.settings.value("path", ""), "JSON (*.json)")
+            grades.Subject.saveToJson(path, self.window.grades)
+            grades.Subject.settings.setValue("path", path)
+            
     def registerImport(self):
+        if not self.confirmDiscard():
+            return
+        
         self.credentials = loginDialog.loginDialog.getCredentials(**self.credentials[1])
         if not self.credentials[0]:
             return
@@ -113,29 +138,24 @@ class MenuBar(QMenuBar):
         self.window.refreshTabs()
     
     def jsonImport(self):
-        if path := QFileDialog.getOpenFileName(filter="Json files (*.json);;Text files (*.txt);;All files (*)", caption="select json file to import", directory=self.dir)[0]:
+        if self.confirmDiscard() or (path := QFileDialog.getOpenFileName(filter="Json files (*.json);;Text files (*.txt);;All files (*)", caption="select json file to import", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
              self.window.grades = grades.Subject.readFromJson(path)
              self.window.refreshTabs()
-             self.dir = path
              
     def yamlImport(self):
-        if path := QFileDialog.getOpenFileName(filter="Yaml files (*.yaml);;Text files (*.txt);;All files (*)", caption="select yaml file to import", directory=self.dir)[0]:
+        if self.confirmDiscard() or (path := QFileDialog.getOpenFileName(filter="Yaml files (*.yaml);;Text files (*.txt);;All files (*)", caption="select yaml file to import", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
              self.window.grades = grades.Subject.readFromYaml(path)
              self.window.refreshTabs()
-             self.dir = path
              
     def configImport(self):
-        if path := QFileDialog.getOpenFileName(filter="Config files (*.ini);;Text files (*.txt);;All files (*)", caption="select config file to import", directory=self.dir)[0]:
+        if self.confirmDiscard() or (path := QFileDialog.getOpenFileName(filter="Config files (*.ini);;Text files (*.txt);;All files (*)", caption="select config file to import", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
              self.gwindow.grades = grades.Subject.readFromYaml(path)
              self.window.refreshTabs()
-             self.dir = path
     
     def jsonExport(self):
-        if path := QFileDialog.getSaveFileName(filter="Json files (*.json);;Text files (*.txt);;All files (*)", caption="select save location", directory=self.dir)[0]:
+        if self.confirmDiscard() or (path := QFileDialog.getSaveFileName(filter="Json files (*.json);;Text files (*.txt);;All files (*)", caption="select save location", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
              grades.Subject.saveToJson(path, self.grades)
-             self.dir = path
              
     def yamlExport(self):
-        if path := QFileDialog.getSaveFileName(filter="Yaml files (*.yaml);;Text files (*.txt);;All files (*)", caption="select save location", directory=self.dir)[0]:
+        if self.confirmDiscard() or (path := QFileDialog.getSaveFileName(filter="Yaml files (*.yaml);;Text files (*.txt);;All files (*)", caption="select save location", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
              grades.Subject.saveToYaml(path, self.grades)
-             self.dir = path

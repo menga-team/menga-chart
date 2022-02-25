@@ -46,7 +46,6 @@ class Window(QMainWindow):
         app.exec()
         
         grades.Subject.writeToQ(self.grades)
-        grades.Subject.settings.setValue("dialogPath", self.menubar.dir)
         
         
     def refreshTabs(self):

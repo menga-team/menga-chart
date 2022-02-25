@@ -15,6 +15,7 @@ import json
 class Subject(dict):
     
     settings = QSettings("menga", "grade-chart")
+    edited = False
     
     def __init__(self, **kwargs):
 
@@ -122,7 +123,10 @@ class Subject(dict):
         self.sig.colorUpdate.emit()
         self.update()
 
-    def update(self):
+    def update(self, changed=True):
+        if not Subject.edited:
+            Subject.edited = changed
+            
         if self.chart is None:
             return
 

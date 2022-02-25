@@ -43,7 +43,7 @@ class TimeChart(pg.PlotWidget):
             self.plotItems2[subj._id] = self.plot((), (), symbol="+", pen=subj["pen"])
 
         for subj in self.grades:
-            subj.update()
+            subj.update(False)
     
     def collectGarbage(self):
         temp = []
