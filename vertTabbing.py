@@ -1,3 +1,4 @@
+from tkinter.tix import ButtonBox
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -40,7 +41,7 @@ class VertTabButton(QPushButton):
         self.add_grade_button.setIcon(self.add_grade_button.style().standardIcon(QStyle.SP_FileDialogNewFolder))
 
         self.remove_button.setIcon(self.remove_button.style().standardIcon(QStyle.SP_DialogCloseButton))
-        self.remove_button.clicked.connect(self.tab_widget.self_destruct)
+        self.remove_button.clicked.connect(self.on_self_destruct)
 
         self.layout.addWidget(self.name_label)
         self.layout.addLayout(self.button_layout)
@@ -56,6 +57,11 @@ class VertTabButton(QPushButton):
         # self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self.setMinimumHeight(90)
         self.setLayout(self.layout)
+    
+    def on_self_destruct(self):
+        self.tab_widget.self_destruct()
+        if len(self.stack.children()) > 0:
+            self.buttonlayout.itemAt(0).widget().click()
     
     def on_click(self):
         # for i in [self.buttonlayout.itemAt(i).widget() for i in range(self.buttonlayout.count())]:

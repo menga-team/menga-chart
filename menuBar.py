@@ -81,7 +81,7 @@ class MenuBar(QMenuBar):
             grades.Subject.settings.setValue("path", path)
             
     def registerImport(self):
-        if not self.confirmDiscard():
+        if self.confirmDiscard():
             return
         
         self.credentials = loginDialog.loginDialog.getCredentials(**self.credentials[1])
@@ -138,24 +138,39 @@ class MenuBar(QMenuBar):
         self.window.refreshTabs()
     
     def jsonImport(self):
-        if self.confirmDiscard() or (path := QFileDialog.getOpenFileName(filter="Json files (*.json);;Text files (*.txt);;All files (*)", caption="select json file to import", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
+        filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
+        caption = "select json file to import"
+        directory = grades.Subject.settings.value("dialogPath", os.path.expanduser('~'))
+        if (path := self.confirmDiscard()) or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
              self.window.grades = grades.Subject.readFromJson(path)
              self.window.refreshTabs()
              
     def yamlImport(self):
-        if self.confirmDiscard() or (path := QFileDialog.getOpenFileName(filter="Yaml files (*.yaml);;Text files (*.txt);;All files (*)", caption="select yaml file to import", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
+        filter ="Yaml files (*.yaml);;Text files (*.txt);;All files (*)"
+        caption = "select yaml file to import"
+        directory = grades.Subject.settings.value("dialogPath", os.path.expanduser('~'))
+        if (path := self.confirmDiscard()) or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
              self.window.grades = grades.Subject.readFromYaml(path)
              self.window.refreshTabs()
              
     def configImport(self):
-        if self.confirmDiscard() or (path := QFileDialog.getOpenFileName(filter="Config files (*.ini);;Text files (*.txt);;All files (*)", caption="select config file to import", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
+        filter = "Config files (*.ini);;Text files (*.txt);;All files (*)"
+        caption = "select config file to import"
+        directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~'))
+        if (path := self.confirmDiscard()) or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
              self.gwindow.grades = grades.Subject.readFromYaml(path)
              self.window.refreshTabs()
     
     def jsonExport(self):
-        if self.confirmDiscard() or (path := QFileDialog.getSaveFileName(filter="Json files (*.json);;Text files (*.txt);;All files (*)", caption="select save location", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
+        filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
+        caption = "select save location"
+        directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~'))
+        if (path := self.confirmDiscard()) or (path := QFileDialog.getSaveFileName(filter=filter, caption=caption, directory=directory)[0]):
              grades.Subject.saveToJson(path, self.grades)
              
     def yamlExport(self):
-        if self.confirmDiscard() or (path := QFileDialog.getSaveFileName(filter="Yaml files (*.yaml);;Text files (*.txt);;All files (*)", caption="select save location", directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~')))[0]):
+        filter = "Yaml files (*.yaml);;Text files (*.txt);;All files (*)"
+        caption = "select save location"
+        directory=grades.Subject.settings.value("dialogPath", os.path.expanduser('~'))
+        if (path := self.confirmDiscard()) or (path := QFileDialog.getSaveFileName(filter=filter, caption=caption, directory=directory)[0]):
              grades.Subject.saveToYaml(path, self.grades)
