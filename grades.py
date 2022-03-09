@@ -82,18 +82,18 @@ class Subject(dict):
         func = lambda: [Subject(**i) for i in json.loads(Subject.settings.value("grades"))]
         data = utils.Exeption_handler(func, silent=True, message=message)
         if data[0]:
-            return []
-            # return data[1]
-        else: return []
+                # return []
+                return data[1]
+            else: return []
         
     @staticmethod
     def readFromQwithPath(path):
-        config = configparser.ConfigParser()
-        config.readfp(open(path))
-        
+        def action():
+            config = configparser.ConfigParser()
+            config.readfp(open(path))
+            return [Subject(**i) for i in json.loads(config.get("General", "grades", fallback="[]"))]
         message="There was an error retrieving the application settings"
-        func = lambda: [Subject(**i) for i in json.loads(config.get("General", "grades", fallback="[]"))]
-        data = utils.Exeption_handler(func, silent=True, message=message)
+        data = utils.Exeption_handler(action, silent=True, message=message)
         if data[0]:
             return data[1]
         else: return []
