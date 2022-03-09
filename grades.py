@@ -84,7 +84,7 @@ class Subject(dict):
         if data[0]:
                 # return []
                 return data[1]
-            else: return []
+        else: return []
         
     @staticmethod
     def readFromQwithPath(path):
