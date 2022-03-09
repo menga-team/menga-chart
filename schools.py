@@ -18,7 +18,7 @@
 
 #######################################################################################################
 #                                                                                                     #
-# ALL following data is taken from this amazing project: github.com/miDeb/digitales_register  #
+# ALL following data is taken from this amazing project: https://github.com/miDeb/digitales_register  #
 #                                                                                                     #
 #######################################################################################################
 
