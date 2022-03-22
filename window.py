@@ -9,10 +9,14 @@ import gradeEditor
 import json
 import menuBar
 
+
 class Window(QMainWindow):
     def __init__(self, app):
         super().__init__()
+        self.app = app
         self.show()
+        # i literally just noticed that it still says "Graaph" on the windowtitle.
+        # welp, not fixing it now and shame on anyone who tries to do it
         self.setWindowTitle('Graaph')
 
         # move to schreen centre
@@ -27,32 +31,32 @@ class Window(QMainWindow):
 
         # for i in self.grades:
         #     print(json.dumps(i, indent=2))
-        
+
         self.menubar = menuBar.MenuBar(self)
-        
-        
+
         self.tabs = QTabWidget()
         self.tabs.setContentsMargins(0, 0, 0, 0)
         self.timeChartTab = charts.TimeChart(self.grades)
-        self.gradeEditorTab = gradeEditor.gradeEditor(self.grades, self.timeChartTab)
+        self.gradeEditorTab = gradeEditor.gradeEditor(
+            self.grades, self.timeChartTab)
         self.CSVTab = QWidget()
         # self.tabs.resize(300,200)
-        self.tabs.addTab(self.gradeEditorTab,"Grade Editor")
-        self.tabs.addTab(self.timeChartTab,"Time chart")
+        self.tabs.addTab(self.gradeEditorTab, "Grade Editor")
+        self.tabs.addTab(self.timeChartTab, "Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")
-        
+
         self.setCentralWidget(self.tabs)
         self.setMenuBar(self.menubar)
         app.exec()
-        
+
         grades.Subject.writeToQ(self.grades)
-        
-        
+
     def refreshTabs(self):
         self.tabs.clear()
         self.timeChartTab = charts.TimeChart(self.grades)
-        self.gradeEditorTab = gradeEditor.gradeEditor(self.grades, self.timeChartTab)
+        self.gradeEditorTab = gradeEditor.gradeEditor(
+            self.grades, self.timeChartTab)
         # self.tabs.resize(300,200)
-        self.tabs.addTab(self.gradeEditorTab,"Grade Editor")
-        self.tabs.addTab(self.timeChartTab,"Time chart")
+        self.tabs.addTab(self.gradeEditorTab, "Grade Editor")
+        self.tabs.addTab(self.timeChartTab, "Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")

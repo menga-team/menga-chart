@@ -41,7 +41,7 @@ from PyQt5.QtGui import *
 #         self.setTabBar(self.TabBar)
 #         self.setTabPosition(QTabWidget.West)
 #         self.switches = []
-    
+
 #     def addTab(self, *args):
 #         super().addTab(*args)
 #         switch = QToolButton()
@@ -52,15 +52,16 @@ from PyQt5.QtGui import *
 
 
 def Exeption_handler(func, *args, silent=False, message=None, **kwargs):
-    try: 
+    try:
         return True, func(*args, **kwargs)
     except Exception as e:
-        if message is not None: message = f"{str(e)}\n\n[{message}]"
-        else: message = str(e)
+        if message is not None:
+            message = f"{str(e)}\n\n[{message}]"
+        else:
+            message = str(e)
         error_dialog = QErrorMessage()
         error_dialog.showMessage(message)
         error_dialog.exec()
         if not silent:
             raise e
         return False, message
-    

@@ -12,15 +12,17 @@ import configparser
 from datetime import datetime
 import json
 
+
 class Subject(dict):
-    
+
     settings = QSettings("menga", "grade-chart")
     edited = False
-    
+
     def __init__(self, **kwargs):
 
         for i in kwargs.keys():
             self[i] = kwargs[i]
+
         class SubjectEvent(QObject):
             chartUpdate = pyqtSignal()
             colorUpdate = pyqtSignal()
@@ -57,65 +59,71 @@ class Subject(dict):
             grade.sort_grades()
             grades.append(grade)
         return grades
-    
+
     @staticmethod
     def readFromYaml(path):
-        message="There was an error reading the json file"
-        func = lambda: [Subject(**i) for i in yaml.safe_load(open(path))]
+        message = "There was an error reading the json file"
+        def func(): return [Subject(**i) for i in yaml.safe_load(open(path))]
         data = utils.Exeption_handler(func, silent=True, message=message)
         if data[0]:
             return data[1]
-        else: return []
-    
+        else:
+            return []
+
     @staticmethod
     def readFromJson(path):
-        message="There was an error reading the json file"
-        func = lambda: [Subject(**i) for i in json.load(open(path))]
+        message = "There was an error reading the json file"
+        def func(): return [Subject(**i) for i in json.load(open(path))]
         data = utils.Exeption_handler(func, silent=True, message=message)
         if data[0]:
             return data[1]
-        else: return []
-        
+        else:
+            return []
+
     @staticmethod
     def readFromQ():
-        message="There was an error retrieving the application settings"
-        func = lambda: [Subject(**i) for i in json.loads(Subject.settings.value("grades"))]
+        message = "There was an error retrieving the application settings"
+        def func(): return [Subject(**i)
+                            for i in json.loads(Subject.settings.value("grades"))]
         data = utils.Exeption_handler(func, silent=True, message=message)
         if data[0]:
-                # return []
-                return data[1]
-        else: return []
-        
+            # return []
+            return data[1]
+        else:
+            return []
+
     @staticmethod
     def readFromQwithPath(path):
         def action():
             config = configparser.ConfigParser()
             config.readfp(open(path))
             return [Subject(**i) for i in json.loads(config.get("General", "grades", fallback="[]"))]
-        message="There was an error retrieving the application settings"
+        message = "There was an error retrieving the application settings"
         data = utils.Exeption_handler(action, silent=True, message=message)
         if data[0]:
             return data[1]
-        else: return []
-    
+        else:
+            return []
+
     @staticmethod
     def saveToJson(path, grades):
-        message="There was an error saving the json file"
-        func = lambda: json.dump(grades, open(path, "w"))
+        message = "There was an error saving the json file"
+        def func(): return json.dump(grades, open(path, "w"))
         utils.Exeption_handler(func, silent=True, message=message)
-    
+
     @staticmethod
     def saveToYaml(path, grades):
-        message="There was an error saving the yaml file"
-        func = lambda: yaml.dump([dict(**i) for i in grades], open(path, "w"))
+        message = "There was an error saving the yaml file"
+        def func(): return yaml.dump([dict(**i)
+                                      for i in grades], open(path, "w"))
         utils.Exeption_handler(func, silent=True, message=message)
-        
+
     @staticmethod
     def writeToQ(grades):
-        message="There was an error retrieving the application settings"
-        func = lambda: Subject.settings.setValue("grades", json.dumps(grades, indent=2))
+        message = "There was an error retrieving the application settings"
+        def func(): return Subject.settings.setValue(
+            "grades", json.dumps(grades, indent=2))
         utils.Exeption_handler(func, silent=True, message=message)
-        
 
     def updatePen(self):
         self.chart.plotItems1[self._id].setPen(**self["pen"])
@@ -126,7 +134,7 @@ class Subject(dict):
     def update(self, changed=True):
         if not Subject.edited:
             Subject.edited = changed
-            
+
         if self.chart is None:
             return
 
@@ -225,12 +233,12 @@ class Subject(dict):
     def get_masks(self, ):
         self.sort_grades()
         return [i["mask"] for i in self["grades"] if i["mask"]]
-    
+
     def self_destruct(self):
         self["visible"] = False
         self.deleteLater = True
         self.sig.selfDestruct.emit()
         self.update()
-    
+
     def sort_grades(self):
         self["grades"].sort(key=lambda x: x["date"])

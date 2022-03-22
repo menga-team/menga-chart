@@ -15,7 +15,8 @@ class newGradeDialog(QDialog):
         self.grade_spin = QDoubleSpinBox()
         self.weight_spin = QSpinBox()
         self.date_editor = QDateEdit()
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        self.button_box = QDialogButtonBox(
+            QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.grade = {}
         self.subj = subj
 
@@ -42,7 +43,7 @@ class newGradeDialog(QDialog):
 
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
-        
+
         self.layout.addWidget(QLabel("visible:"), 0, 0)
         self.layout.addWidget(self.toggle, 0, 1)
         self.layout.addWidget(QLabel("set grade:"), 1, 0)
@@ -59,7 +60,6 @@ class newGradeDialog(QDialog):
         # centre = (self.x() + (self.frameGeometry().width() // 2) - (self.width() // 2),
         #           self.y() + (self.frameGeometry().height() // 2) - (self.height() // 2))
         # self.move(centre[0], centre[1])
-
 
     # def toggle_clicked(self):
     #     self.grade["visible"] = self.toggle.isChecked()

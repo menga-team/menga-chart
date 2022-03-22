@@ -12,33 +12,33 @@ class penIcon(QToolButton):
         super().__init__()
 
         self.subj = subj
-        
 
         self.clicked.connect(self.setColor)
         self.updateCosmetic()
         self.subj.sig.colorUpdate.connect(self.updateCosmetic)
-        
+
     def setColor(self):
         self.subj["pen"] = penDialog.getPen(self.subj["pen"], self)
         self.subj.updatePen()
-        
+
     def updateCosmetic(self):
         p = QPalette()
-        p.setColor(self.backgroundRole(), QColor.fromRgb(*self.subj["pen"]["color"]))
+        p.setColor(self.backgroundRole(), QColor.fromRgb(
+            *self.subj["pen"]["color"]))
         self.setText(str(self.subj["pen"]["width"]))
-        
+
         if (0.299 * self.subj["pen"]["color"][0] + 0.587 * self.subj["pen"]["color"][1] + 0.114 * self.subj["pen"]["color"][2]) > 0.5:
             p.setColor(QPalette.ButtonText, Qt.black)
-            
+
         else:
             p.setColor(QPalette.ButtonText, Qt.white)
-        
+
         self.setPalette(p)
-        
-    
+
     # def paintEvent(self, a0) -> None:
     #     painter = QPainter(self)
     #     painter.fillRect(self.rect(), QColor.fromRgb(*self.pen["color"]))
+
 
 class penDialog(QDialog):
     def __init__(self, pen, icon):
@@ -48,14 +48,15 @@ class penDialog(QDialog):
         self.icon = icon
 
         self.layout = QGridLayout()
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        self.button_box = QDialogButtonBox(
+            QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.spinLayout = QHBoxLayout()
         self.cosmetics_toggle = AnimatedToggle()
         self.widthSlider = QSlider(Qt.Horizontal)
         self.widthSpinBox = QSpinBox()
         self.colorButton = QToolButton()
         self.colorDialog = QColorDialog()
-        
+
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
@@ -74,9 +75,10 @@ class penDialog(QDialog):
         self.colorDialog.setOption(QColorDialog.NoButtons)
         self.colorDialog.setOption(QColorDialog.ShowAlphaChannel)
         self.colorDialog.setOption(QColorDialog.DontUseNativeDialog)
-        
+
         self.colorButton.clicked.connect(self.setColor)
-        self.colorButton.setIcon(self.colorButton.style().standardIcon(QStyle.SP_DialogResetButton))
+        self.colorButton.setIcon(self.colorButton.style(
+        ).standardIcon(QStyle.SP_DialogResetButton))
 
         # self.colorDialog.setCurrentColor(QColor(self.pen["color"][0], self.pen["color"][1], self.pen["color"][2], self.pen["color"][3]))
 
@@ -106,12 +108,14 @@ class penDialog(QDialog):
         self.updateCosmetic()
 
     def setColor(self):
-        self.pen["color"] = self.colorDialog.getColor(QColor.fromRgb(*self.pen["color"]), parent=self.colorButton).getRgb()
+        self.pen["color"] = self.colorDialog.getColor(QColor.fromRgb(
+            *self.pen["color"]), parent=self.colorButton).getRgb()
         self.updateCosmetic()
 
     def updateCosmetic(self):
         p = self.colorButton.palette()
-        p.setColor(self.colorButton.backgroundRole(), QColor.fromRgb(*self.pen["color"]))
+        p.setColor(self.colorButton.backgroundRole(),
+                   QColor.fromRgb(*self.pen["color"]))
         self.colorButton.setPalette(p)
 
     # def reject(self) -> None:

@@ -12,6 +12,7 @@ from PyQt5.QtGui import *
 from window import *
 import utils
 
+
 def main():
     utils.Exeption_handler(Window, app)
 
