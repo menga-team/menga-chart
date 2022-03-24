@@ -14,7 +14,7 @@ from pyqtgraph.Qt import QtGui
 
 
 class TimeChart(pg.PlotWidget):
-    def __init__(self, grades):
+    def __init__(self, grades, window):
         super().__init__(axisItems={'bottom': pg.DateAxisItem()})
         self.showGrid(x=True, y=True)
         self.setBackground(QPalette().window().color())
@@ -23,6 +23,8 @@ class TimeChart(pg.PlotWidget):
         self.display_text.setParentItem(self.plotItem.vb)
 
         self.snap_radius = 5
+        
+        self.window = window
 
         self.grades = grades
         for i in self.grades:

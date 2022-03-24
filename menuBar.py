@@ -65,29 +65,38 @@ class MenuBar(QMenuBar):
         self.yamlExportAction.triggered.connect(self.yamlExport)
 
     def confirmDiscard(self):
-        if grades.Subject.edited:
+        if grades.Subject.edited or grades.Subject.settings.value("path", ""):
             res = QMessageBox.warning(self, "ONG!!", "There are unsaved changes.\nDo you want to save your changes?",
                                       QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Save)
             if res == QMessageBox.Save:
-                self.saveProject()
+                return self.saveProject()
             elif res == QMessageBox.Cancel:
                 return False
-        print(grades.Subject.settings.value("path", False))
-        return grades.Subject.settings.value("path", False)
+            elif res == QMessageBox.Discard:
+                return True
+        else:
+            return True
 
     def newProject(self):
         if self.confirmDiscard():
             self.window.grades = []
             self.window.refreshTabs()
             grades.Subject.settings.setValue("path", "")
+            grades.Subject.edited = False
+            self.window.updateStats()
 
-    def saveProject(self):
+    def saveProject(self, DontSkipDialog=False):
         if grades.Subject.settings.value("path", "") == "":
             path = QFileDialog.getSaveFileName(
                 self, "Save File", grades.Subject.settings.value("path", ""), "JSON (*.json)")[0]
             if path:
                 grades.Subject.saveToJson(path, self.window.grades)
                 grades.Subject.settings.setValue("path", path)
+                grades.Subject.edited = False
+                self.window.updateStats()
+                return True
+        return False
+                
 
     def openProject(self):
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
@@ -97,10 +106,12 @@ class MenuBar(QMenuBar):
         if (path := self.confirmDiscard()) or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
             self.window.grades = grades.Subject.readFromJson(path)
             grades.Subject.settings.setValue("path", path)
+            grades.Subject.edited = False
+            self.window.updateStats()
             self.window.refreshTabs()
 
     def registerImport(self):
-        if self.confirmDiscard():
+        if not self.confirmDiscard():
             return
 
         self.credentials = loginDialog.loginDialog.getCredentials(
@@ -158,6 +169,7 @@ class MenuBar(QMenuBar):
                 else:
                     data[1]["subjects"].append(i)
 
+        grades.Subject.edited = True
         self.window.grades = grades.Subject.getFromRequestResponse(data[1])
         # for i in self.window.grades:
         #     i.chart = self.window.timeChartTab
@@ -173,6 +185,7 @@ class MenuBar(QMenuBar):
         if self.confirmDiscard() and (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
             self.window.grades = grades.Subject.readFromJson(path)
             self.window.refreshTabs()
+            grades.Subject.edited = True
             print(path)
 
     def yamlImport(self):
@@ -182,6 +195,7 @@ class MenuBar(QMenuBar):
             "dialogPath", os.path.expanduser('~'))
         if (path := self.confirmDiscard()) and (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
             self.window.grades = grades.Subject.readFromYaml(path)
+            grades.Subject.edited = True
             self.window.refreshTabs()
 
     def configImport(self):
@@ -191,6 +205,7 @@ class MenuBar(QMenuBar):
             "dialogPath", os.path.expanduser('~'))
         if (path := self.confirmDiscard()) and (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
             self.gwindow.grades = grades.Subject.readFromYaml(path)
+            grades.Subject.edited = True
             self.window.refreshTabs()
 
     def jsonExport(self):

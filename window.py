@@ -36,16 +36,35 @@ class Window(QMainWindow):
 
         self.tabs = QTabWidget()
         self.tabs.setContentsMargins(0, 0, 0, 0)
-        self.timeChartTab = charts.TimeChart(self.grades)
+        self.timeChartTab = charts.TimeChart(self.grades, self)
         self.gradeEditorTab = gradeEditor.gradeEditor(
             self.grades, self.timeChartTab)
         self.CSVTab = QWidget()
         # self.tabs.resize(300,200)
         self.tabs.addTab(self.gradeEditorTab, "Grade Editor")
         self.tabs.addTab(self.timeChartTab, "Time chart")
-        # self.tabs.addTab(self.CSVTab,"CSV view")
+        # self.tabs.addTab(self.CSVTab,"CSV view"
+        
+        self.statLayout = QHBoxLayout()
+        self.pathLabel = QLabel()
+        self.averageLabel = QLabel()
+        self.changedLabel = QLabel()
+        self.statLayout.addWidget(self.pathLabel)
+        self.statLayout.addStretch()
+        self.statLayout.addWidget(self.averageLabel)
+        self.statLayout.addWidget(self.changedLabel)
+        self.updateStats()
+        
+        for i in self.grades:
+            i.sig.chartUpdate.connect(self.updateStats)
+        
+        self.temp = QWidget()
+        self.templayout = QVBoxLayout()
+        self.templayout.addWidget(self.tabs)
+        self.templayout.addLayout(self.statLayout)
+        self.temp.setLayout(self.templayout)
 
-        self.setCentralWidget(self.tabs)
+        self.setCentralWidget(self.temp)
         self.setMenuBar(self.menubar)
         app.exec()
 
@@ -53,10 +72,24 @@ class Window(QMainWindow):
 
     def refreshTabs(self):
         self.tabs.clear()
-        self.timeChartTab = charts.TimeChart(self.grades)
+        self.timeChartTab = charts.TimeChart(self.grades, self)
         self.gradeEditorTab = gradeEditor.gradeEditor(
             self.grades, self.timeChartTab)
         # self.tabs.resize(300,200)
         self.tabs.addTab(self.gradeEditorTab, "Grade Editor")
         self.tabs.addTab(self.timeChartTab, "Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")
+
+    def updateStats(self):
+        self.pathLabel.setText(grades.Subject.settings.value("path", "") if grades.Subject.settings.value("path", "") == "" else "New Project")
+        self.averageLabel.setText(str(grades.Subject.getAverage(self.grades)))
+        
+        p = QPalette()
+        if grades.Subject.edited:
+            self.changedLabel.setText("UNSAVED")
+            p.setColor(QPalette.WindowText, Qt.red)
+        else: 
+            self.changedLabel.setText("SAVED")
+            p.setColor(QPalette.WindowText, Qt.green)
+        self.changedLabel.setPalette(p)
+            

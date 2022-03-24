@@ -242,3 +242,21 @@ class Subject(dict):
 
     def sort_grades(self):
         self["grades"].sort(key=lambda x: x["date"])
+    
+    @staticmethod
+    def getAverage(grades, SubjectMode=True):
+        if grades == []:
+            return 0
+        if SubjectMode:
+            p = []
+            for i in [i.get_average() for i in grades]:
+                if i != 0:
+                    p.append(i)
+            if len(p) < 1:
+                return 0
+            return round(sum(p) / len(p), 2)
+        else:
+            subj = Subject()
+            for i in grades:
+                subj["grades"].extend(i["grades"])
+            return subj.get_average()
