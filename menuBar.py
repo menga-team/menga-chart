@@ -27,6 +27,7 @@ class MenuBar(QMenuBar):
         self.OpenAction = self.FileMenu.addAction("Open")
         self.OpenRecentAction = self.FileMenu.addMenu("Open Recent")
         self.SaveAction = self.FileMenu.addAction("Save")
+        self.SaveAsAction = self.FileMenu.addAction("Save As")
         self.FileMenu.addSeparator()
         self.refreshChartAction = self.FileMenu.addAction("Refresh Time Chart")
         self.refreshAction = self.FileMenu.addAction("Refresh Grade Editor")
@@ -59,6 +60,7 @@ class MenuBar(QMenuBar):
         self.NewAction.triggered.connect(self.newProject)
         self.OpenAction.triggered.connect(self.openProject)
         self.SaveAction.triggered.connect(self.saveProject)
+        self.SaveAsAction.triggered.connect(self.saveAs)
         self.refreshAction.triggered.connect(self.refreshGradeEditor)
         self.refreshChartAction.triggered.connect(self.refreshTimeChart)
         self.QuitAction.triggered.connect(self.window.app.quit)
@@ -97,7 +99,8 @@ class MenuBar(QMenuBar):
         for i in range(len(paths)):
             action = self.OpenRecentAction.addAction(paths[i])
             # thank u so fucking much: https://stackoverflow.com/questions/20390323/pyqt-dynamic-generate-qmenu-action-and-connect
-            action.triggered.connect(lambda chk, i=i: [self.openProject(paths[i]), print(paths[i], i)])
+            action.triggered.connect(lambda chk, i=i: self.openProject(paths[i]))
+        pass
         
 
     def refreshTimeChart(self):
@@ -133,11 +136,19 @@ class MenuBar(QMenuBar):
             if path:
                 grades.Subject.saveToJson(path, self.window.grades)
                 self.addPath(path)
-                print(path)
                 grades.Subject.edited = False
                 self.window.updateStats()
                 return True
         return False
+
+    def saveAs(self):
+        path = QFileDialog.getSaveFileName(
+            self, "Save File", grades.Subject.settings.value("paths", list(""))[0], "JSON (*.json)")[0]
+        if path:
+            grades.Subject.saveToJson(path, self.window.grades)
+            self.addPath(path)
+            grades.Subject.edited = False
+            self.window.updateStats()
 
     def openProject(self, path=False):
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"

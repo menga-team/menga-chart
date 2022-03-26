@@ -83,7 +83,10 @@ class Window(QMainWindow):
         self.tabs.setCurrentIndex(i)
 
     def updateStats(self):
-        self.pathLabel.setText(grades.Subject.settings.value("paths", [""])[0] if grades.Subject.settings.value("paths", [""])[0] == "" else "New Project")
+        path = grades.Subject.settings.value("paths", ["New Project"])[0]
+        if path == "":
+            path = "New Project"
+        self.pathLabel.setText(path)
         self.averageLabel.setText(str(grades.Subject.getAverage(self.grades)))
         
         p = QPalette()
