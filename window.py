@@ -71,6 +71,7 @@ class Window(QMainWindow):
         grades.Subject.writeToQ(self.grades)
 
     def refreshTabs(self):
+        i = self.tabs.currentIndex()
         self.tabs.clear()
         self.timeChartTab = charts.TimeChart(self.grades, self)
         self.gradeEditorTab = gradeEditor.gradeEditor(
@@ -79,9 +80,10 @@ class Window(QMainWindow):
         self.tabs.addTab(self.gradeEditorTab, "Grade Editor")
         self.tabs.addTab(self.timeChartTab, "Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view")
+        self.tabs.setCurrentIndex(i)
 
     def updateStats(self):
-        self.pathLabel.setText(grades.Subject.settings.value("path", "") if grades.Subject.settings.value("path", "") == "" else "New Project")
+        self.pathLabel.setText(grades.Subject.settings.value("paths", [""])[0] if grades.Subject.settings.value("paths", [""])[0] == "" else "New Project")
         self.averageLabel.setText(str(grades.Subject.getAverage(self.grades)))
         
         p = QPalette()
