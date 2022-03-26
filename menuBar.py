@@ -5,6 +5,8 @@ import os
 import loginDialog
 import grades
 import webbrowser
+import gradeEditor
+import charts
 
 from PyQt5 import *
 from PyQt5.QtCore import *
@@ -23,6 +25,7 @@ class MenuBar(QMenuBar):
         self.FileMenu = self.addMenu("File")
         self.NewAction = self.FileMenu.addAction("New")
         self.OpenAction = self.FileMenu.addAction("Open")
+        self.OpenRecentAction = self.FileMenu.addMenu("Open Recent")
         self.SaveAction = self.FileMenu.addAction("Save")
         self.FileMenu.addSeparator()
         self.refreshChartAction = self.FileMenu.addAction("Refresh Time Chart")
@@ -56,6 +59,8 @@ class MenuBar(QMenuBar):
         self.NewAction.triggered.connect(self.newProject)
         self.OpenAction.triggered.connect(self.openProject)
         self.SaveAction.triggered.connect(self.saveProject)
+        self.refreshAction.triggered.connect(self.refreshGradeEditor)
+        self.refreshChartAction.triggered.connect(self.refreshTimeChart)
         self.QuitAction.triggered.connect(self.window.app.quit)
         self.registerImportAction.triggered.connect(self.registerImport)
         self.jsonImportAction.triggered.connect(self.jsonImport)
@@ -63,9 +68,10 @@ class MenuBar(QMenuBar):
         self.configImportAction.triggered.connect(self.configImport)
         self.jsonExportAction.triggered.connect(self.jsonExport)
         self.yamlExportAction.triggered.connect(self.yamlExport)
+        self.updateRecentProjects()
 
     def confirmDiscard(self):
-        if grades.Subject.edited or grades.Subject.settings.value("path", ""):
+        if grades.Subject.edited or grades.Subject.settings.value("paths", list(""))[0]:
             res = QMessageBox.warning(self, "ONG!!", "There are unsaved changes.\nDo you want to save your changes?",
                                       QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Save)
             if res == QMessageBox.Save:
@@ -76,36 +82,71 @@ class MenuBar(QMenuBar):
                 return True
         else:
             return True
+    
+    def addPath(self, path):
+        paths = grades.Subject.settings.value("paths", [])
+        if path in paths:
+            paths.remove(path)
+        paths.insert(0, path)
+        grades.Subject.settings.setValue("paths", paths)
+        self.updateRecentProjects()
+    
+    def updateRecentProjects(self):
+        self.OpenRecentAction.clear()
+        paths = grades.Subject.settings.value("paths", []).copy()
+        for i in range(len(paths)):
+            action = self.OpenRecentAction.addAction(paths[i])
+            # thank u so fucking much: https://stackoverflow.com/questions/20390323/pyqt-dynamic-generate-qmenu-action-and-connect
+            action.triggered.connect(lambda chk, i=i: [self.openProject(paths[i]), print(paths[i], i)])
+        
+
+    def refreshTimeChart(self):
+        i = self.window.tabs.currentIndex()
+        self.window.tabs.clear()
+        self.window.timeChartTab = charts.TimeChart(
+            self.window.grades, self.window)
+        self.window.tabs.addTab(self.window.gradeEditorTab, "Grade Editor")
+        self.window.tabs.addTab(self.window.timeChartTab, "Time chart")
+        self.window.tabs.setCurrentIndex(i)
+
+    def refreshGradeEditor(self):
+        i = self.window.tabs.currentIndex()
+        self.window.tabs.clear()
+        self.window.gradeEditorTab = gradeEditor.gradeEditor(
+            self.window.grades, self.window.timeChartTab)
+        self.window.tabs.addTab(self.window.gradeEditorTab, "Grade Editor")
+        self.window.tabs.addTab(self.window.timeChartTab, "Time chart")
+        self.window.tabs.setCurrentIndex(i)
 
     def newProject(self):
         if self.confirmDiscard():
             self.window.grades = []
             self.window.refreshTabs()
-            grades.Subject.settings.setValue("path", "")
+            self.addPath("")
             grades.Subject.edited = False
             self.window.updateStats()
 
     def saveProject(self, DontSkipDialog=False):
-        if grades.Subject.settings.value("path", "") == "":
+        if grades.Subject.settings.value("paths", list(""))[0] == "":
             path = QFileDialog.getSaveFileName(
-                self, "Save File", grades.Subject.settings.value("path", ""), "JSON (*.json)")[0]
+                self, "Save File", grades.Subject.settings.value("paths", list(""))[0], "JSON (*.json)")[0]
             if path:
                 grades.Subject.saveToJson(path, self.window.grades)
-                grades.Subject.settings.setValue("path", path)
+                self.addPath(path)
+                print(path)
                 grades.Subject.edited = False
                 self.window.updateStats()
                 return True
         return False
-                
 
-    def openProject(self):
+    def openProject(self, path=False):
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
         caption = "select json file to open"
         directory = grades.Subject.settings.value(
             "dialogPath", os.path.expanduser('~'))
-        if (path := self.confirmDiscard()) or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0]):
+        if  self.confirmDiscard() and (path != "" or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0])):
             self.window.grades = grades.Subject.readFromJson(path)
-            grades.Subject.settings.setValue("path", path)
+            self.addPath(path)
             grades.Subject.edited = False
             self.window.updateStats()
             self.window.refreshTabs()
