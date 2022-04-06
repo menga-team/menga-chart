@@ -31,5 +31,6 @@ class newSubjectDialog(QDialog):
     @staticmethod
     def getSubject():
         d = newSubjectDialog()
-        d.exec()
-        return d.subj
+        if d.exec():
+            return d.subj
+        return None

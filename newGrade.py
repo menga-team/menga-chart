@@ -87,5 +87,6 @@ class newGradeDialog(QDialog):
     @staticmethod
     def getGrade(subj):
         d = newGradeDialog(subj)
-        d.exec()
-        return d.grade
+        if d.exec():
+            return d.grade
+        return None

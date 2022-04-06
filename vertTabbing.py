@@ -1,4 +1,3 @@
-from tkinter.tix import ButtonBox
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -106,12 +105,15 @@ class VertTabButton(QPushButton):
 
 
 class VertTabLayout(QHBoxLayout):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent = parent 
 
         self.stack = QStackedLayout()
         self.buttonGroup = QButtonGroup()
         self.button_layout = QVBoxLayout()
+        self.button_sub_layout = QVBoxLayout()
+        self.add_subject_button = QPushButton()
         self.scroll = QScrollArea()
         self.widget = QWidget()
 
@@ -125,8 +127,15 @@ class VertTabLayout(QHBoxLayout):
         # policy = self.scroll.sizePolicy()
         # policy.setHorizontalPolicy(QSizePolicy.Expanding)
         # self.scroll.setSizePolicy(policy)
-
+        
+        self.add_subject_button.setIcon(self.add_subject_button.style().standardIcon(QStyle.SP_ToolBarVerticalExtensionButton))
+        self.add_subject_button.clicked.connect(self.parent.addSubject)
+        
         self.button_layout.setAlignment(Qt.AlignTop)
+        self.button_layout.addLayout(self.button_sub_layout)
+        self.button_layout.addWidget(self.add_subject_button)
+        
+        self.button_sub_layout.setAlignment(Qt.AlignTop)
 
         self.buttonGroup.setExclusive(True)
 
@@ -138,9 +147,9 @@ class VertTabLayout(QHBoxLayout):
     def addTab(self, widget, subj):
         self.stack.addWidget(widget)
         button = VertTabButton(
-            self.stack, widget, self.button_layout, self.buttonGroup, subj)
+            self.stack, widget, self.button_sub_layout, self.buttonGroup, subj)
         widget.tab_button = button
-        self.button_layout.insertWidget(0, button)
+        self.button_sub_layout.insertWidget(0, button)
         self.buttonGroup.addButton(button)
 
         if len(self.stack.children()) < 2:

@@ -159,6 +159,8 @@ class gradeEditorTab(QWidget):
 
     def addGrade(self):
         grade = newGradeDialog.getGrade(self.subj)
+        if grade is None:
+            return
         self.subj["grades"].append(grade)
         self.subj.sort_grades()
 
@@ -193,7 +195,7 @@ class gradeEditor(QWidget):
         self.grades = grades
         self.chart = chart
 
-        self.tabs = VertTabLayout()
+        self.tabs = VertTabLayout(self)
 
         for subj in self.grades:
             self.tabs.addTab(gradeEditorTab(subj), subj)
@@ -203,6 +205,8 @@ class gradeEditor(QWidget):
     def addSubject(self):
         from newSubject import newSubjectDialog
         subj = newSubjectDialog.getSubject()
+        if subj is None:
+            return
         subj.chart = self.chart
         self.grades.append(subj)
         self.chart.addPlot(subj._id)
