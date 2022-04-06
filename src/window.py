@@ -32,8 +32,6 @@ class Window(QMainWindow):
         # for i in self.grades:
         #     print(json.dumps(i, indent=2))
 
-        self.menubar = menuBar.MenuBar(self)
-
         self.tabs = QTabWidget()
         self.tabs.setContentsMargins(0, 0, 0, 0)
         self.timeChartTab = charts.TimeChart(self.grades, self)
@@ -44,6 +42,8 @@ class Window(QMainWindow):
         self.tabs.addTab(self.gradeEditorTab, "Grade Editor")
         self.tabs.addTab(self.timeChartTab, "Time chart")
         # self.tabs.addTab(self.CSVTab,"CSV view"
+        
+        self.menubar = menuBar.MenuBar(self)
         
         self.statLayout = QHBoxLayout()
         self.pathLabel = QLabel()

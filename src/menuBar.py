@@ -136,12 +136,12 @@ class MenuBar(QMenuBar):
             grades.Subject.edited = False
             self.window.updateStats()
 
-    def openProject(self, path=False):
+    def openProject(self, path=None):
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
         caption = "select json file to open"
         directory = grades.Subject.settings.value(
             "dialogPath", os.path.expanduser('~'))
-        if  self.confirmDiscard() and (path != "" or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0])):
+        if  self.confirmDiscard() and (path != None or (path := QFileDialog.getOpenFileName(filter=filter, caption=caption, directory=directory)[0])):
             self.window.grades = grades.Subject.readFromJson(path)
             self.addPath(path)
             grades.Subject.edited = False
