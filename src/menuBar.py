@@ -7,6 +7,7 @@ import grades
 import webbrowser
 import gradeEditor
 import charts
+import aboutDialog
 
 from PyQt5 import *
 from PyQt5.QtCore import *
@@ -54,7 +55,7 @@ class MenuBar(QMenuBar):
         self.HelpMenu = self.addMenu("Help")
         self.HelpAction = self.HelpMenu.addAction("Help", lambda: webbrowser.open("https://github.com/menga-team/menga-chart"))
         self.IssuesAction = self.HelpMenu.addAction("Issues/Report a Bug", lambda: webbrowser.open("https://github.com/menga-team/menga-chart/issues"))
-        self.AboutAction = self.HelpMenu.addAction("About the application")
+        self.AboutAction = self.HelpMenu.addAction("About the application", aboutDialog.aboutDialog.displayDialog)
 
         self.updateRecentProjects()
 
