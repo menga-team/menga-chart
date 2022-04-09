@@ -1,9 +1,14 @@
-import sys
-import random
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+
+import random
+
+try:
+    import __init__ as menga_chart
+except:
+    import menga_chart
 
 
 class aboutDialog(QDialog):
@@ -13,16 +18,15 @@ class aboutDialog(QDialog):
         self.layout = QVBoxLayout()
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         
-        self.authors = ["nakano miku"]
-        if not isinstance(self.authors, list):
-            self.authors = [self.authors]
+        if not isinstance(menga_chart.author, list):
+            menga_chart.author = [menga_chart.author]
         
         
         self.text_edit = QTextEdit()
         self.res = f'<p align="center">wow script by penisspan</p>'
         self.text_edit.setText(
         f"""
-<p align="center">Authors: {str(self.authors)[1:-1]}</p>
+<p align="center">Authors: {str(menga_chart.author)[1:-1]}</p>
 <p align="center">
 Of course it would be unfair not to include all of the support 
 other menga-team members have given us duriong the development 
@@ -49,13 +53,13 @@ compleatly impossible. Hope it doesent get to repetitive.
 
 <body>
     <section id="menga-chart" class="level2">
-        <h2>Menga-chart</h2>
-        <p><sub><em>0.0.1 alpha</em></sub></p>
+        <h2>{menga_chart.name}</h2>
+        <p><sub><em>{menga_chart.version}</em></sub></p>
         <p><strong>Application for displaying and editing school grade stats</strong></p>
         <p>Contact us: </p>
         <ul>
             <li><a href="https://github.com/menga-tema/menga0chart">website</a>: https://github.com/menga-tema/menga</li>
-            <li><a href="menga.team@yandex.com">email</a>: menga.team@yandex.com</li>
+            <li><a href="{menga_chart.email}">email</a>: {menga_chart.email}</li>
             <li>shouting (very hard)</li>
         </ul>
         <p>Copyright © 2022 menga-team;</p>
@@ -97,7 +101,7 @@ compleatly impossible. Hope it doesent get to repetitive.
             
             prefix = random.choice(preFixes) if random.randint(0, 1) else ""  
             title = random.choice(titles)
-            author = random.choice(self.authors)
+            author = random.choice(menga_chart.author)
             
             content = f"big thx to our <strong>{prefix} {title}</strong> a.k.a <strong>{author}</strong>"
             if random.randint(0, 75) == 75:
@@ -110,8 +114,3 @@ compleatly impossible. Hope it doesent get to repetitive.
     def displayDialog():
         d = aboutDialog()
         d.exec()
-        
-
-
-app = QApplication(sys.argv)
-aboutDialog.displayDialog()

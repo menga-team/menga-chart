@@ -2,20 +2,25 @@ from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from menga_chart.gradeEditor import gradeEditorTab
-from menga_chart.grades import Subject
+
+try:
+    from menga_chart import gradeEditor
+    from menga_chart import grades
+except ImportError:
+    from menga_chart import gradeEditor
+    from menga_chart import grades
 
 
 class newSubjectDialog(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.subj = Subject()
+        self.subj = grades.Subject()
 
         self.layout = QVBoxLayout()
         self.button_box = QDialogButtonBox(
             QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
-        self.subject_editor = gradeEditorTab(self.subj)
+        self.subject_editor = gradeEditor.gradeEditorTab(self.subj)
 
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)

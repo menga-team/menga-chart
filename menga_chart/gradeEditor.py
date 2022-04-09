@@ -1,10 +1,18 @@
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from menga_chart.vertTabbing import *
+from PyQt5.QtGui import *\
+
 from qtwidgets import AnimatedToggle
-from menga_chart.newGrade import newGradeDialog
+
+try:
+    import vertTabbing
+    import newGrade
+    import penutils
+except ImportError:
+    from menga_chart import vertTabbing
+    from menga_chart import newGrade
+    from menga_chart import penutils
 
 
 class singleGradeEditor(QHBoxLayout):
@@ -95,7 +103,7 @@ class gradeEditorTab(QWidget):
         self.name_box = QHBoxLayout()
         self.layout = QVBoxLayout()
         self.item_layout = QVBoxLayout()
-        self.penIcon = penIcon(self.subj)
+        self.penIcon = penutils.penIcon(self.subj)
         self.addGradeButton = QPushButton()
         self.removeSubjectButton = QPushButton()
 
@@ -158,7 +166,7 @@ class gradeEditorTab(QWidget):
         self.tab_button.setParent(None)
 
     def addGrade(self):
-        grade = newGradeDialog.getGrade(self.subj)
+        grade = newGrade.newGradeDialog.getGrade(self.subj)
         if grade is None:
             return
         self.subj["grades"].append(grade)
@@ -195,7 +203,7 @@ class gradeEditor(QWidget):
         self.grades = grades
         self.chart = chart
 
-        self.tabs = VertTabLayout(self)
+        self.tabs = vertTabbing.VertTabLayout(self)
 
         for subj in self.grades:
             self.tabs.addTab(gradeEditorTab(subj), subj)

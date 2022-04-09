@@ -1,18 +1,30 @@
-from menga_chart import utils
-import requests
-from menga_chart import grades
-import os
-from menga_chart import loginDialog
-from menga_chart import grades
-import webbrowser
-from menga_chart import gradeEditor
-from menga_chart import charts
-from  menga_chart import aboutDialog
-
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+
+import requests
+import os
+import webbrowser
+
+try:
+    import __init__ as menga_chart
+    import gradeEditor
+    import charts
+    import aboutDialog
+    import loginDialog
+    import grades
+    import grades
+    import utils
+except ImportError:
+    import menga_chart
+    from menga_chart import gradeEditor
+    from menga_chart import charts
+    from menga_chart import aboutDialog
+    from menga_chart import loginDialog
+    from menga_chart import grades
+    from menga_chart import grades
+    from menga_chart import utils
 
 
 class MenuBar(QMenuBar):
@@ -53,8 +65,8 @@ class MenuBar(QMenuBar):
             "To https://www.digitalesregister.it/", self.registerExport)
 
         self.HelpMenu = self.addMenu("Help")
-        self.HelpAction = self.HelpMenu.addAction("Help", lambda: webbrowser.open("https://github.com/menga-team/menga-chart"))
-        self.IssuesAction = self.HelpMenu.addAction("Issues/Report a Bug", lambda: webbrowser.open("https://github.com/menga-team/menga-chart/issues"))
+        self.HelpAction = self.HelpMenu.addAction("Help", lambda: webbrowser.open(menga_chart.url))
+        self.IssuesAction = self.HelpMenu.addAction("Issues/Report a Bug", lambda: webbrowser.open(menga_chart.url + "/issues"))
         self.AboutAction = self.HelpMenu.addAction("About the application", aboutDialog.aboutDialog.displayDialog)
 
         self.updateRecentProjects()

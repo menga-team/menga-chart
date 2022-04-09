@@ -5,8 +5,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-from menga_chart.window import *
-from menga_chart.utils import *
+try: 
+    import window
+    import utils
+except ImportError:
+    from menga_chart import window
+    from menga_chart import utils
+    
 
 
 # Check whether there is already a running QApplication (e.g., if running
@@ -16,7 +21,7 @@ if not app:
     app = QApplication(sys.argv)
 
 def main():
-    Exeption_handler(Window, app)
+    utils.Exeption_handler(window.Window, app)
 
 
 if __name__ == "__main__":

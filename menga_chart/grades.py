@@ -1,15 +1,19 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+
+from datetime import datetime
 import time
 import sys
 import random
-from menga_chart import utils
 import yaml
 import configparser
-
-from datetime import datetime
 import json
+
+try:
+    import utils
+except ImportError:
+    from menga_chart import utils
 
 
 class Subject(dict):

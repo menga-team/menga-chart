@@ -1,12 +1,16 @@
-from menga_chart.grades import Subject
-from menga_chart import utils
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from menga_chart.gradeEditor import gradeEditorTab
+
 import requests
-from menga_chart import schools
+
+try:
+    import grades
+    import schools
+except ImportError:
+    from menga_chart import grades
+    from menga_chart import schools
 
 
 class loginDialog(QDialog):
@@ -31,7 +35,7 @@ class loginDialog(QDialog):
 
         self.domainEdit.setEditable(True)
         self.domainEdit.addItems(schools.schools.keys())
-        self.domainEdit.setCurrentText(Subject.settings.value(
+        self.domainEdit.setCurrentText(grades.Subject.settings.value(
             "loginDialogDefaultDomain", defaultValue=".digitalesregister.it"))
         self.domainEdit.textHighlighted.connect(
             lambda x: self.domainEdit.setCurrentText(schools.schools[x]))
@@ -45,7 +49,7 @@ class loginDialog(QDialog):
 
         self.semesterSpinbox.addItems(("first", "second", "both"))
         self.semesterSpinbox.setCurrentIndex(
-            int(Subject.settings.value("loginDialogDefaultSemester", defaultValue=0)))
+            int(grades.Subject.settings.value("loginDialogDefaultSemester", defaultValue=0)))
 
         self.testButton.setText("Test Connection")
         self.testButton.clicked.connect(self.testConnection)
@@ -83,9 +87,9 @@ class loginDialog(QDialog):
     def accept(self) -> None:
         self.creds["username"] = self.userEdit.text()
         self.creds["password"] = self.passwordEdit.text()
-        Subject.settings.setValue(
+        grades.Subject.settings.setValue(
             "loginDialogDefaultDomain", self.domainEdit.currentText())
-        Subject.settings.setValue(
+        grades.Subject.settings.setValue(
             "loginDialogDefaultSemester", self.semesterSpinbox.currentIndex())
         return super().accept()
 

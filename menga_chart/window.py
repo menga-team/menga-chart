@@ -3,11 +3,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-from menga_chart import charts
-from   menga_chart import grades
-from menga_chart import gradeEditor
-import json
-from menga_chart import menuBar
+try:
+    import charts
+    import grades
+    import gradeEditor
+    import menuBar
+except ImportError:
+    from menga_chart import charts
+    from menga_chart import grades
+    from menga_chart import gradeEditor
+    from menga_chart import menuBar
 
 
 class Window(QMainWindow):

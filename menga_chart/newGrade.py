@@ -2,8 +2,8 @@ from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+
 from qtwidgets import AnimatedToggle
-from menga_chart.grades import Subject
 
 
 class newGradeDialog(QDialog):

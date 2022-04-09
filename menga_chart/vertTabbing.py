@@ -2,9 +2,15 @@ from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+
 from qtwidgets import AnimatedToggle
-from menga_chart.newGrade import newGradeDialog
-from menga_chart.penutils import penIcon
+
+try:
+    import newGrade
+    import penutils
+except ImportError:
+    from menga_chart import newGrade
+    from menga_chart import penutils
 
 
 class VertTabButton(QPushButton):
@@ -23,7 +29,7 @@ class VertTabButton(QPushButton):
         self.button_layout = QHBoxLayout()
         self.label_layout = QHBoxLayout()
         self.name_label = QLabel()
-        self.penButton = penIcon(self.subj)
+        self.penButton = penutils.penIcon(self.subj)
         self.visibility_switch = AnimatedToggle()
         self.mode_combobox = QComboBox()
         self.remove_button = QToolButton()
@@ -37,7 +43,7 @@ class VertTabButton(QPushButton):
         self.visibility_switch.stateChanged.connect(self.toggle_visibility)
         self.visibility_switch.setChecked(bool(subj["visible"]))
 
-        self.add_grade_button.clicked.connect(newGradeDialog.getGrade)
+        self.add_grade_button.clicked.connect(newGrade.newGradeDialog.getGrade)
         self.add_grade_button.setIcon(
             self.add_grade_button.style().standardIcon(QStyle.SP_FileDialogNewFolder))
 
