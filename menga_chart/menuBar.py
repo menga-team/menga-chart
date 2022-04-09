@@ -29,13 +29,21 @@ except ImportError:
 
 class MenuBar(QMenuBar):
     def __init__(self, window) -> None:
+        """holds the menubar. just so u know, this class ids fucking massive. it also handles project saving and expoorting ologic, server communication, etc
+
+        Args:
+            window (window): parent window
+        """        
         super().__init__()
 
+        # initialize ui
         self.window = window
         self.grades = window.grades
         self.credentials = (True, {})
 
+        # > 
         self.FileMenu = self.addMenu("File")
+        # > File >
         self.NewAction = self.FileMenu.addAction("New", self.newProject)
         self.OpenAction = self.FileMenu.addAction("Open", self.openProject)
         self.OpenRecentAction = self.FileMenu.addMenu("Open Recent")
@@ -47,24 +55,27 @@ class MenuBar(QMenuBar):
         self.FileMenu.addSeparator()
         self.QuitAction = self.FileMenu.addAction("Quit", self.window.app.quit)
 
+        # > 
         self.InsertMenu = self.addMenu("Insert")
+        # > Insert >
         self.newSubjectAction = self.InsertMenu.addAction("New Subject", self.window.gradeEditorTab.addSubject)
         self.InsertMenu.addSeparator()
-
         self.ImportMenu = self.InsertMenu.addMenu("Import")
+        # > Insert > Import
         self.jsonImportAction = self.ImportMenu.addAction("From Json File", self.jsonImport)
         self.yamlmportAction = self.ImportMenu.addAction("From Yaml File", self.yamlImport)
         self.configImportAction = self.ImportMenu.addAction("From Config File", self.configImport)
         self.registerImportAction = self.ImportMenu.addAction(
             "From https://www.digitalesregister.it/", self.registerImport)
-
         self.ExportMenu = self.InsertMenu.addMenu("Export")
+        # > Insert > Export
         self.jsonExportAction = self.ExportMenu.addAction("To Json File", self.jsonExport)
         self.yamlExportAction = self.ExportMenu.addAction("To Yaml File", self.yamlExport)
         self.registerExportAction = self.ExportMenu.addAction(
             "To https://www.digitalesregister.it/", self.registerExport)
-
+        # > 
         self.HelpMenu = self.addMenu("Help")
+        # > Help >
         self.HelpAction = self.HelpMenu.addAction("Help", lambda: webbrowser.open(menga_chart.url))
         self.IssuesAction = self.HelpMenu.addAction("Issues/Report a Bug", lambda: webbrowser.open(menga_chart.url + "/issues"))
         self.AboutAction = self.HelpMenu.addAction("About the application", aboutDialog.aboutDialog.displayDialog)
@@ -72,6 +83,11 @@ class MenuBar(QMenuBar):
         self.updateRecentProjects()
 
     def confirmDiscard(self):
+        """asks the user if he wants to save, discard or cancel the current project if needed
+
+        Returns:
+            bool: if the current project may be overwritten or not
+        """
         if grades.Subject.edited or grades.Subject.settings.value("paths", list(""))[0]:
             res = QMessageBox.warning(self, "ONG!!", "There are unsaved changes.\nDo you want to save your changes?",
                                       QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Save)
@@ -85,6 +101,11 @@ class MenuBar(QMenuBar):
             return True
     
     def addPath(self, path):
+        """adds a new apth to the recent projects
+
+        Args:
+            path (str): path to the new project
+        """
         paths = grades.Subject.settings.value("paths", [])
         if path in paths:
             paths.remove(path)
@@ -93,6 +114,8 @@ class MenuBar(QMenuBar):
         self.updateRecentProjects()
     
     def updateRecentProjects(self):
+        """regenerates the recent projects QMenu
+        """
         self.OpenRecentAction.clear()
         paths = grades.Subject.settings.value("paths", []).copy()
         for i in range(len(paths)):
@@ -103,6 +126,9 @@ class MenuBar(QMenuBar):
         
 
     def refreshTimeChart(self):
+        """deletes the TimeChart from memory and then regenerates it while preserving the index the user was on at the point of regenerating
+        """
+        # we have to also delete the Tab widget else we cant destroy the c++ object stored in memory
         i = self.window.tabs.currentIndex()
         self.window.tabs.clear()
         self.window.timeChartTab = charts.TimeChart(
@@ -112,6 +138,9 @@ class MenuBar(QMenuBar):
         self.window.tabs.setCurrentIndex(i)
 
     def refreshGradeEditor(self):
+        """deletes the GradeEditor from memory and then regenerates it while preserving the index the user was on at the point of regenerating
+        """
+        # we have to also delete the Tab widget else we cant destroy the c++ object stored in memory
         i = self.window.tabs.currentIndex()
         self.window.tabs.clear()
         self.window.gradeEditorTab = gradeEditor.gradeEditor(
@@ -121,6 +150,8 @@ class MenuBar(QMenuBar):
         self.window.tabs.setCurrentIndex(i)
 
     def newProject(self):
+        """opens a new project
+        """
         if self.confirmDiscard():
             self.window.grades = []
             self.window.refreshTabs()
@@ -129,6 +160,14 @@ class MenuBar(QMenuBar):
             self.window.updateStats()
 
     def saveProject(self, DontSkipDialog=False):
+        """saves the current project. Also ahndles the Dialog
+
+        Args:
+            DontSkipDialog (bool, optional): currently useless Defaults to False.
+
+        Returns:
+            _type_: _description_
+        """
         if grades.Subject.settings.value("paths", list(""))[0] == "":
             path = QFileDialog.getSaveFileName(
                 self, "Save File", grades.Subject.settings.value("paths", list(""))[0], "JSON (*.json)")[0]
@@ -141,6 +180,8 @@ class MenuBar(QMenuBar):
         return False
 
     def saveAs(self):
+        """also saves the project, but here the file dialog is shown regardless if the project is save dor not
+        """
         path = QFileDialog.getSaveFileName(
             self, "Save File", grades.Subject.settings.value("paths", list(""))[0], "JSON (*.json)")[0]
         if path:
@@ -150,6 +191,11 @@ class MenuBar(QMenuBar):
             self.window.updateStats()
 
     def openProject(self, path=None):
+        """opens a josn file the user can select via the fil dialog as a project
+
+        Args:
+            path (_type_, optional): default path in the file dialog. Defaults to None.
+        """
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
         caption = "select json file to open"
         directory = grades.Subject.settings.value(
@@ -162,11 +208,16 @@ class MenuBar(QMenuBar):
             self.window.refreshTabs()
 
     def registerImport(self):
+        """Imports grades form the digital register website
+        """
+        # cancel if user does not save the changes
         if not self.confirmDiscard():
             return
 
+        # get credentials
         self.credentials = loginDialog.loginDialog.getCredentials(
             **self.credentials[1])
+        # retunrn if empty
         if not self.credentials[0]:
             return
 
@@ -179,6 +230,7 @@ class MenuBar(QMenuBar):
         login_payload = dict(
             username=self.credentials[1]["username"], password=self.credentials[1]["password"])
 
+        # request cookies for authentication
         login = utils.Exeption_handler(
             requests.post, silent=True, message="there was an error while trying to log you in", **{"url": URL_LOGIN, "json": login_payload})
         if not login[0]:
@@ -191,6 +243,7 @@ class MenuBar(QMenuBar):
 
         message = "there was an error with the communication to the server"
         kwargs = {"url": URL_GRADES, "cookies": cookies}
+        # request grades data form the server
         reqst = utils.Exeption_handler(
             requests.get, silent=True, message=message, params=params, **kwargs)
         if not reqst[0]:
@@ -199,8 +252,9 @@ class MenuBar(QMenuBar):
             reqst[1].json, silent=True, message="there was an error decoding the servers reponse")
         if not data[0]:
             return
-
+        
         if semester == 2:
+            # if both semester have bee requested we have to send an addition request for the second semester
             message = "there was an error with the communication to the server"
             kwargs = {"url": URL_GRADES, "cookies": cookies}
             params = [["semesterWechsel", 2]]
@@ -212,7 +266,7 @@ class MenuBar(QMenuBar):
                 reqst[1].json, silent=True, message="there was an error decoding the servers reponse")
             if not new_data[0]:
                 return
-
+            # merge both semesters
             for i in data[1]["subjects"]:
                 data0 = {x["subjectId"]: x for x in new_data[1]["subjects"]}
                 if i["subjectId"] in data0.keys():
@@ -229,6 +283,7 @@ class MenuBar(QMenuBar):
         self.window.refreshTabs()
 
     def jsonImport(self):
+        """handels the Dialog and surrounding logic for the json importing"""
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
         caption = "select json file to import"
         directory = grades.Subject.settings.value(
@@ -240,6 +295,7 @@ class MenuBar(QMenuBar):
             print(path)
 
     def yamlImport(self):
+        """handels the Dialog and surrounding logic for the yaml importing"""
         filter = "Yaml files (*.yaml);;Text files (*.txt);;All files (*)"
         caption = "select yaml file to import"
         directory = grades.Subject.settings.value(
@@ -250,6 +306,7 @@ class MenuBar(QMenuBar):
             self.window.refreshTabs()
 
     def configImport(self):
+        """handels the Dialog and surrounding logic for the config importing"""
         filter = "Config files (*.ini);;Text files (*.txt);;All files (*)"
         caption = "select config file to import"
         directory = grades.Subject.settings.value(
@@ -260,6 +317,7 @@ class MenuBar(QMenuBar):
             self.window.refreshTabs()
 
     def jsonExport(self):
+        """handels the Dialog and surrounding logic for the json exporting"""
         filter = "Json files (*.json);;Text files (*.txt);;All files (*)"
         caption = "select save location"
         directory = grades.Subject.settings.value(
@@ -268,6 +326,7 @@ class MenuBar(QMenuBar):
             grades.Subject.saveToJson(path, self.grades)
 
     def yamlExport(self):
+        """handels the Dialog and surrounding logic for the yaml exporting"""
         filter = "Yaml files (*.yaml);;Text files (*.txt);;All files (*)"
         caption = "select save location"
         directory = grades.Subject.settings.value(
@@ -276,6 +335,7 @@ class MenuBar(QMenuBar):
             grades.Subject.saveToYaml(path, self.grades)
 
     def registerExport(self):
+        """Ohhohohoho, I wonder what this does"""
         self.credentials = loginDialog.loginDialog.getCredentials(
             **self.credentials[1])
         if not self.credentials[0]:

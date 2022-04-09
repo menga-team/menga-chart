@@ -16,15 +16,21 @@ except ImportError:
 
 
 class Window(QMainWindow):
-    def __init__(self, app): 
+    def __init__(self, app):
+        """Its the main window and parent of all Widgets and Dialog in the application.
+
+        Args:
+            app (QApp): needed to styart the programm
+        """
         super().__init__()
         self.app = app
+        # show() initilizes the ui engine and indicates wich Widget or window ist the on that we want to actually render as parent
         self.show()
         # i literally just noticed that it still says "Graaph" on the windowtitle.
         # welp, not fixing it now and shame on anyone who tries to do it
         self.setWindowTitle('Graaph')
 
-        # move to schreen centre
+        # move to schreen centre (holy shit i already documented this part?!?!)
         self.resize(800, 800)
         qtRectangle = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()
@@ -37,6 +43,7 @@ class Window(QMainWindow):
         # for i in self.grades:
         #     print(json.dumps(i, indent=2))
 
+        # initilize tabs and ui
         self.tabs = QTabWidget()
         self.tabs.setContentsMargins(0, 0, 0, 0)
         self.timeChartTab = charts.TimeChart(self.grades, self)
@@ -50,6 +57,7 @@ class Window(QMainWindow):
         
         self.menubar = menuBar.MenuBar(self)
         
+        # initlize and compodse even more ui shit n stuff
         self.statLayout = QHBoxLayout()
         self.pathLabel = QLabel()
         self.averageLabel = QLabel()
@@ -60,6 +68,7 @@ class Window(QMainWindow):
         self.statLayout.addWidget(self.changedLabel)
         self.updateStats()
         
+        # connect the chartupdate event in every label
         for i in self.grades:
             i.sig.chartUpdate.connect(self.updateStats)
         
@@ -69,13 +78,17 @@ class Window(QMainWindow):
         self.templayout.addLayout(self.statLayout)
         self.temp.setLayout(self.templayout)
 
+        # set the central widget, menubar and finally starts the eventloop of the application by calling exec()
         self.setCentralWidget(self.temp)
         self.setMenuBar(self.menubar)
         app.exec()
 
+        # save the grades to the application settings
         grades.Subject.writeToQ(self.grades)
 
     def refreshTabs(self):
+        """basically reload the entire application ecxcept the menubar and statsbar
+        """
         i = self.tabs.currentIndex()
         self.tabs.clear()
         self.timeChartTab = charts.TimeChart(self.grades, self)
@@ -88,6 +101,8 @@ class Window(QMainWindow):
         self.tabs.setCurrentIndex(i)
 
     def updateStats(self):
+        """updates the data on the bottom bar.
+        """
         path = grades.Subject.settings.value("paths", ["New Project"])[0]
         if path == "":
             path = "New Project"

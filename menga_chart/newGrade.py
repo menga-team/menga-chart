@@ -8,8 +8,14 @@ from qtwidgets import AnimatedToggle
 
 class newGradeDialog(QDialog):
     def __init__(self, subj):
+        """Dialog to add new Grades
+
+        Args:
+            subj (Subject): subject to wich we are adding the new grade
+        """
         super().__init__()
 
+        # initialize the ui
         self.layout = QGridLayout()
         self.toggle = AnimatedToggle()
         self.grade_spin = QDoubleSpinBox()
@@ -20,30 +26,36 @@ class newGradeDialog(QDialog):
         self.grade = {}
         self.subj = subj
 
+        #setup the visibility toggle
         self.toggle.setChecked(True)
         # self.toggle.stateChanged.connect(self.toggle_clicked)
         self.toggle.setMaximumWidth(70)
 
+        # setup the grade spinner
         self.grade_spin.setSingleStep(0.5)
         self.grade_spin.setMaximum(10.25)
         self.grade_spin.setMinimum(-0.25)
         self.grade_spin.setValue(7.5)
         # self.grade_spin.valueChanged.connect(self.grade_spin_edited)
-
+        
+        # setup the weight spinner
         self.weight_spin.setSingleStep(5)
         self.weight_spin.setMaximum(100)
         self.weight_spin.setMinimum(-0)
         self.weight_spin.setValue(100)
         # self.weight_spin.valueChanged.connect(self.weight_spin)
-
+        
+        # setup the date editor
         self.date_editor.setDisplayFormat("dd/MM/yyyy")
         self.date_editor.setDate(QDate.currentDate())
         # self.date_editor.dateChanged.connect(self.date_edited)
         self.date_editor.setCalendarPopup(True)
 
+        # setup the button box
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
+        # compose the ui
         self.layout.addWidget(QLabel("visible:"), 0, 0)
         self.layout.addWidget(self.toggle, 0, 1)
         self.layout.addWidget(QLabel("set grade:"), 1, 0)
@@ -76,6 +88,11 @@ class newGradeDialog(QDialog):
     #     self.grade["date"] = d.toSecsSinceEpoch()
 
     def accept(self) -> None:
+        """overriden method to ensure the grade is saved before returning "super().accept()"
+
+        Returns:
+            _type_: literally "return super().accept()"
+        """        
         d = QDateTime()
         d.setDate(self.date_editor.date())
         self.grade["date"] = d.toSecsSinceEpoch()
@@ -86,6 +103,14 @@ class newGradeDialog(QDialog):
 
     @staticmethod
     def getGrade(subj):
+        """conveniency method that generates a grade dialog and starts it
+
+        Args:
+            subj (Subject): subject to wich the new grade will be added
+
+        Returns:
+            any: grade or None if the user has cancelled the action
+        """
         d = newGradeDialog(subj)
         if d.exec():
             return d.grade
