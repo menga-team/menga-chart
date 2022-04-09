@@ -3,8 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from qtwidgets import AnimatedToggle
-from newGrade import newGradeDialog
-from penutils import penIcon
+from menga_chart.newGrade import newGradeDialog
+from menga_chart.penutils import penIcon
 
 
 class VertTabButton(QPushButton):

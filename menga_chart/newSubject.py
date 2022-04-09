@@ -2,8 +2,8 @@ from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from gradeEditor import gradeEditorTab
-from grades import Subject
+from menga_chart.gradeEditor import gradeEditorTab
+from menga_chart.grades import Subject
 
 
 class newSubjectDialog(QDialog):

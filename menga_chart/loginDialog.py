@@ -1,12 +1,12 @@
-from grades import Subject
-import utils
+from menga_chart.grades import Subject
+from menga_chart import utils
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from gradeEditor import gradeEditorTab
+from menga_chart.gradeEditor import gradeEditorTab
 import requests
-import schools
+from menga_chart import schools
 
 
 class loginDialog(QDialog):

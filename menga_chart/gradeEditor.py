@@ -2,9 +2,9 @@ from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from vertTabbing import *
+from menga_chart.vertTabbing import *
 from qtwidgets import AnimatedToggle
-from newGrade import newGradeDialog
+from menga_chart.newGrade import newGradeDialog
 
 
 class singleGradeEditor(QHBoxLayout):

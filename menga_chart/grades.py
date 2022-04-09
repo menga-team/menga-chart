@@ -1,11 +1,10 @@
-from email import utils
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import time
 import sys
 import random
-import utils
+from menga_chart import utils
 import yaml
 import configparser
 

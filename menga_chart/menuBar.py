@@ -1,13 +1,13 @@
-import utils
+from menga_chart import utils
 import requests
-import grades
+from menga_chart import grades
 import os
-import loginDialog
-import grades
+from menga_chart import loginDialog
+from menga_chart import grades
 import webbrowser
-import gradeEditor
-import charts
-import aboutDialog
+from menga_chart import gradeEditor
+from menga_chart import charts
+from  menga_chart import aboutDialog
 
 from PyQt5 import *
 from PyQt5.QtCore import *

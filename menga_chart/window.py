@@ -3,15 +3,15 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-import charts
-import grades
-import gradeEditor
+from menga_chart import charts
+from   menga_chart import grades
+from menga_chart import gradeEditor
 import json
-import menuBar
+from menga_chart import menuBar
 
 
 class Window(QMainWindow):
-    def __init__(self, app):
+    def __init__(self, app): 
         super().__init__()
         self.app = app
         self.show()
